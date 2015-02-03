@@ -7,31 +7,26 @@ import Mouse
 import Time
 
 main : Signal Element
-main = map (pendulum 90 (degrees 20)) counter
+main = map display counter
 
-pendulum : Float -> Float -> Float -> Element
+display : Float -> Element
+display t = collage 120 130 [ pendulum 90 (degrees 20) t |> moveY 45 ]
+
+pendulum : Float -> Float -> Float -> Form
 pendulum r thetaMax t =
   let
-    theta = thetaMax * cos (0.2 * pi * t)
-    x = r * (sin <| theta)
-    y = 40 - (r * (cos <| theta))
-    clockLocation = (0, 40)
-    bobLocation = (x, y)
-    bob = filled red (circle 10)
-    thread = traced (solid black) (segment clockLocation bobLocation)
-  in collage 120 120 [ 
-    thread,
-    digitalClock t |> move clockLocation,
-    bob |> move bobLocation ]
-
-digitalClock : Float -> Form
-digitalClock t =
-  let ticks = t * 0.1 |> floor |> toString |> plainText |> toForm
-  in group [ filled lightBlue (rect 50 20), ticks ] |> moveY 10
+    theta = thetaMax * cos (2 * pi * t)
+    x = r * (sin theta)
+    y = r * (cos theta) |> negate
+    ticks = t |> floor |> toString |> plainText |> toForm
+    digitalClock = group [ filled lightBlue (rect 50 20), ticks ] |> moveY 10
+    bob = filled red (circle 10) |> move (x,y)
+    thread = traced (dotted black) (segment (0, 0) (x,y))
+  in group [ thread, digitalClock, bob ]
 
 counter : Signal Float
 counter =
-  let rate = \t -> Time.inSeconds t * 10
+  let rate = \t -> Time.inSeconds t
   in accum rate 0 time
 
 time : Signal Time.Time
