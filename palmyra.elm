@@ -18,10 +18,11 @@ pendulum r thetaMax t =
     theta = thetaMax * cos (2 * pi * t)
     x = r * (sin theta)
     y = r * (cos theta) |> negate
+    thread = traced (dotted black) (segment (0, 0) (x,y))
+    bob = filled red (circle 10) |> move (x,y)
+
     ticks = t |> floor |> toString |> plainText |> toForm
     digitalClock = group [ filled lightBlue (rect 50 20), ticks ] |> moveY 10
-    bob = filled red (circle 10) |> move (x,y)
-    thread = traced (dotted black) (segment (0, 0) (x,y))
   in group [ thread, digitalClock, bob ]
 
 counter : Signal Float
