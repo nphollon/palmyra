@@ -1,5 +1,5 @@
 import Interface (display)
-import Types (..)
+import System
 
 import Graphics.Element (Element)
 import Signal as S
@@ -8,16 +8,16 @@ import Time
 
 
 main : S.Signal Element
-main = S.map display system
+main = S.map display systemSignal
 
-network = {
-    time = 0,
-    stocks = [ { name="start", size=500 }, { name="middle", size=20 }, { name="end", size=7 } ],
-    flows = [ { source="start", sink="middle" }, { source="middle", sink="end" } ]
-  }
+network = System.stock "start" 500
+  |> System.flowTo "middle" 20
+  |> System.flowTo "end" 7
 
-system : S.Signal System
-system = S.map (\t -> { network | time <- t }) counter
+systemSignal : S.Signal System.System
+systemSignal =
+  let updateTime system dt = { system | time <- dt }
+  in S.map (updateTime network) counter
 
 
 counter : S.Signal Float
@@ -27,11 +27,10 @@ counter =
 
 time : S.Signal Time.Time
 time = let pause = toggle True Mouse.clicks
-  in Time.fpsWhen 100 pause
+  in Time.fpsWhen 60 pause
 
 toggle : Bool -> S.Signal a -> S.Signal Bool
 toggle = S.foldp (\_ b -> not b)
 
 accum : (a -> number) -> number -> S.Signal a -> S.Signal number
 accum f = S.foldp (\t c -> f t + c)
-

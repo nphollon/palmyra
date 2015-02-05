@@ -1,6 +1,6 @@
 module Interface where
 
-import Types (..)
+import System (..)
 
 import Color as C
 import Graphics.Element as GE
