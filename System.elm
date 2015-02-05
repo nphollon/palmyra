@@ -21,3 +21,5 @@ flowTo name size sys =
 
 evolve : Float -> System -> System
 evolve dt system = { system | time <- dt + system.time }
+
+data = identity

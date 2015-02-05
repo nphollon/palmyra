@@ -6,7 +6,7 @@ import Mouse
 import Time
 
 
-main = Interface.display <~ systemSignal
+main = Interface.display << System.data <~ systemSignal
 
 systemSignal = foldp System.evolve startState intervals
 
