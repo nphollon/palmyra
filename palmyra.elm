@@ -10,7 +10,13 @@ main : Signal Element
 main = map display counter
 
 display : Float -> Element
-display t = collage 120 130 [ pendulum 90 (degrees 20) t |> moveY 45 ]
+display t =
+  let
+    clock = collage 120 130 [ pendulum 90 (degrees 20) t |> moveY 45 ]
+    stocks = flow right [ (stock "start" 5), (spacer 10 1), (stock "end" 7) ]
+    connections = flow right [ (connection "start" "end") ]
+  in flow down [ clock, stocks, connections ]
+
 
 pendulum : Float -> Float -> Float -> Form
 pendulum r thetaMax t =
@@ -21,7 +27,7 @@ pendulum r thetaMax t =
     thread = traced (dotted black) (segment (0, 0) (x,y))
     bob = filled red (circle 10) |> move (x,y)
 
-    ticks = t |> floor |> toString |> plainText |> toForm
+    ticks = t |> floor |> intElement |> toForm
     digitalClock = group [ filled lightBlue (rect 50 20), ticks ] |> moveY 10
   in group [ thread, digitalClock, bob ]
 
@@ -39,3 +45,17 @@ toggle = foldp (\_ b -> not b)
 
 accum : (a -> number) -> number -> Signal a -> Signal number
 accum f = foldp (\t c -> f t + c)
+
+intElement : Int -> Element
+intElement = toString >> plainText
+
+
+stock : String -> Int -> Element
+stock name quantity = 
+  let label = name ++ "\n" ++ (toString quantity)
+  in plainText label |> (container 40 40 middle) |> color lightYellow
+
+connection : String -> String -> Element
+connection source sink =
+  let label = "from " ++ source ++ " to " ++ sink
+  in plainText label |> (container 120 40 middle) |> color lightGreen
