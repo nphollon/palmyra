@@ -6,6 +6,7 @@ import Color as C
 import Graphics.Element as GE
 import Graphics.Collage as GC
 import List as L
+import Dict as D
 import Text (plainText)
 
 display sys time =
@@ -18,21 +19,32 @@ pendulum t =
     theta = (degrees 20) * cos (2 * pi * t)
     x = r * (sin theta)
     y = r * (cos theta) |> negate
-    thread = GC.traced (GC.dotted C.black) (GC.segment (0, 0) (x,y))
+    thread = GC.traced (GC.solid C.black) (GC.segment (0, 0) (x,y))
     bob = GC.filled C.red (GC.circle 10) |> GC.move (x,y)
 
     ticks = t |> floor |> toString |> plainText |> GC.toForm
     digitalClock = GC.group [ GC.filled C.lightBlue (GC.rect 50 20), ticks ] |> GC.moveY 10
   in GC.group [ thread, digitalClock, bob ]
 
-drawStocks stocks = L.map drawStock stocks |> L.intersperse (GE.spacer 10 1) |> GE.flow GE.right
+drawStocks stocks = 
+  D.map drawStock stocks 
+  |> D.values
+  |> L.intersperse (GE.spacer 10 1)
+  |> GE.flow GE.right
 
-drawStock (name, size) =
+drawStock name size =
   let label = name ++ "\n" ++ (toString size)
-  in plainText label |> (GE.container 80 40 GE.middle) |> GE.color C.lightYellow
+  in plainText label 
+     |> (GE.container 80 40 GE.middle)
+     |> GE.color C.lightYellow
 
-drawFlows flows = L.map drawFlow flows |> L.intersperse (GE.spacer 10 1) |> GE.flow GE.right
+drawFlows flows = 
+  L.map drawFlow flows 
+  |> L.intersperse (GE.spacer 10 1) 
+  |> GE.flow GE.right
 
 drawFlow (source, sink) =
   let label = "from " ++ source ++ " to " ++ sink
-  in plainText label |> (GE.container 200 40 GE.middle) |> GE.color C.lightGreen
+  in plainText label 
+     |> (GE.container 200 40 GE.middle)
+     |> GE.color C.lightGreen

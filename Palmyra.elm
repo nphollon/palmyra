@@ -25,7 +25,7 @@ tick dt (t, ply) =
     plyNext = tNext * plyPerSecond |> floor
   in (tNext, plyNext)
 
-pause = foldp (always not) False Mouse.clicks
+pause = foldp (always not) True Mouse.clicks
 
 startState = 
   let
