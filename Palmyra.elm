@@ -1,18 +1,20 @@
 import Interface
 import System
 
-import Signal ((<~), foldp)
+import Signal ((<~), foldp, Signal)
 import Mouse
 import Time
 
 
-main = Interface.display << System.data <~ systemSignal
+main = Interface.display <~ systemSignal
 
 systemSignal = foldp System.evolve startState intervals
 
-startState = System.stock "start" 500
-  |> System.flowTo "middle" 20
-  |> System.flowTo "end" 7
+startState = 
+  let
+    stocks = [("start", 500), ("middle", 20), ("end", 7)]
+    flows = [("start","middle"), ("middle", "end")]
+  in System.new stocks flows
 
 intervals = Time.inSeconds <~ Time.fpsWhen 60 pause
 

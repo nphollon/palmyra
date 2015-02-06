@@ -1,14 +1,16 @@
 module Interface where
 
+import System
+
 import Color as C
 import Graphics.Element as GE
 import Graphics.Collage as GC
 import List as L
 import Text (plainText)
 
-display { time, stocks, flows } =
-  let clock = GC.collage 120 130 [ pendulum time |> GC.moveY 45 ]
-  in GE.flow GE.down [ clock, drawStocks stocks, drawFlows flows ]
+display sys =
+  let clock = GC.collage 120 130 [ pendulum sys.time |> GC.moveY 45 ]
+  in GE.flow GE.down [ clock, drawStocks sys.stocks, drawFlows sys.flows ]
 
 pendulum t =
   let
@@ -23,16 +25,14 @@ pendulum t =
     digitalClock = GC.group [ GC.filled C.lightBlue (GC.rect 50 20), ticks ] |> GC.moveY 10
   in GC.group [ thread, digitalClock, bob ]
 
-drawStocks stocks = 
-  let
-    label stock = stock.name ++ "\n" ++ (toString stock.size)
-    format string = plainText string |> (GE.container 80 40 GE.middle) |> GE.color C.lightYellow
-    draw = label >> format
-  in L.map draw stocks |> L.intersperse (GE.spacer 10 1) |> GE.flow GE.right
+drawStocks stocks = L.map drawStock stocks |> L.intersperse (GE.spacer 10 1) |> GE.flow GE.right
 
-drawFlows flows =
-  let
-    label flow = "from " ++ flow.source ++ " to " ++ flow.sink
-    format string = plainText string |> (GE.container 200 40 GE.middle) |> GE.color C.lightGreen
-    draw = label >> format
-  in L.map draw flows |> L.intersperse (GE.spacer 10 1) |> GE.flow GE.right
+drawStock (name, size) =
+  let label = name ++ "\n" ++ (toString size)
+  in plainText label |> (GE.container 80 40 GE.middle) |> GE.color C.lightYellow
+
+drawFlows flows = L.map drawFlow flows |> L.intersperse (GE.spacer 10 1) |> GE.flow GE.right
+
+drawFlow (source, sink) =
+  let label = "from " ++ source ++ " to " ++ sink
+  in plainText label |> (GE.container 200 40 GE.middle) |> GE.color C.lightGreen
