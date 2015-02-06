@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Elm • Palmyra</title>
+  </head>
+  <body></body>
+  <script type="text/javascript" src="elm.js"></script>
+  <script type="text/javascript">
+    var query = window.location.search;
+    var param = /speed=([0-9.]+)/g.exec(query);
+    var speed = (param === null) ? null : parseFloat(param[1]);
+    var palmyra = Elm.fullscreen(Elm.Palmyra, { speed : speed });
+  </script>
+</html>

@@ -1,20 +1,25 @@
+module Palmyra where
+
 import Interface
 import System
 
 import Signal ((<~), (~), constant, foldp, Signal)
+import Maybe
 import Mouse
 import Time
 
+port speed : Maybe Float
+
 main = Interface.display <~ system ~ (fst <~ time)
 
-timeDilation = 1.0
-plyPerSecond = 3
+timeDilation = Maybe.withDefault 1.0 speed
+plyPerSecond = 10
 
 system = foldp System.update startState (snd <~ time)
 
-time = foldp dilate (0,0) (Time.fpsWhen 60 pause)
+time = foldp tick (0,0) (Time.fpsWhen 60 pause)
 
-dilate dt (t, ply) =
+tick dt (t, ply) =
   let 
     tNext = Time.inSeconds dt * timeDilation + t
     plyNext = tNext * plyPerSecond |> floor
