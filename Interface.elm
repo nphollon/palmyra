@@ -8,8 +8,8 @@ import Graphics.Collage as GC
 import List as L
 import Text (plainText)
 
-display sys =
-  let clock = GC.collage 120 130 [ pendulum sys.time |> GC.moveY 45 ]
+display sys time =
+  let clock = GC.collage 120 130 [ pendulum time |> GC.moveY 45 ]
   in GE.flow GE.down [ clock, drawStocks sys.stocks, drawFlows sys.flows ]
 
 pendulum t =

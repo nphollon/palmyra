@@ -3,13 +3,20 @@ module System where
 import List as L
 
 type alias System = {
-    time:Float,
+    ply:Int,
     stocks:List (String, Int),
     flows:List (String, String)
   }
 
 new : List (String, Int) -> List (String, String) -> System
-new s f = { time=0, stocks=s, flows=f }
+new s f = { ply=0, stocks=s, flows=f }
 
-evolve : Float -> System -> System
-evolve dt system = { system | time <- dt + system.time }
+update plyLimit sys =
+  if | sys.ply < plyLimit -> evolve sys
+     | otherwise -> sys
+
+evolve : System -> System
+evolve system = { system | ply <- 1 + system.ply
+                         , stocks <- L.map bump system.stocks }
+
+bump (name, size) = (name, size + 1)
