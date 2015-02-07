@@ -30,7 +30,7 @@ drawStocks stocks =
 
 drawStock label =
   plainText label 
-  |> (GE.container 80 40 GE.middle)
+  |> (GE.container 120 30 GE.middle)
   |> GE.color C.lightYellow
 
 drawFlows flows = 
@@ -40,5 +40,5 @@ drawFlows flows =
 
 drawFlow label =
   plainText label 
-  |> (GE.container 200 40 GE.middle)
+  |> (GE.container 160 30 GE.middle)
   |> GE.color C.lightGreen
