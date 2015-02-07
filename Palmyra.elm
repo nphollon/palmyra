@@ -2,7 +2,7 @@ module Palmyra where
 
 import Interface
 import System
-import System (Stock(..))
+import System.Types (Stock(..))
 
 import Signal ((<~), (~), constant, foldp, Signal)
 import Maybe
