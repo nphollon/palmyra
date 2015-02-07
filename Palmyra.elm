@@ -2,11 +2,11 @@ module Palmyra where
 
 import Interface
 import System
-import System.Types (Stock(..))
+import System.Stock (Stock(..))
 
-import Signal ((<~), (~), constant, foldp, Signal)
 import Maybe
 import Mouse
+import Signal ((<~), (~), constant, foldp, Signal)
 import Time
 
 port speed : Maybe Float

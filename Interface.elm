@@ -1,12 +1,9 @@
 module Interface where
 
-import System
-
 import Color as C
-import Graphics.Element as GE
 import Graphics.Collage as GC
+import Graphics.Element as GE
 import List as L
-import Dict as D
 import Text (plainText)
 
 display sys time =

@@ -1,10 +1,10 @@
 module System where
 
-import System.Types (..)
+import System.Stock (..)
+import System.Flow (..)
 
-import List as L
 import Dict as D
-import Maybe as M
+import List as L
 
 type alias System = {
     ply:Int,
@@ -30,22 +30,3 @@ evolve : System -> System
 evolve { ply, stocks, flows } =
   let (newFlows, newStocks) = L.foldr addFlow ([], stocks) flows
   in { ply=ply + 1, stocks=newStocks, flows=newFlows }
-
-addFlow : Flow -> (Flows, Stocks) -> (Flows, Stocks)
-addFlow f (fs, ss) =
-  let (f', ss') = sourceFlowSink (f, ss)
-  in (f'::fs, ss')
-
-sourceFlowSink : (Flow, Stocks) -> (Flow, Stocks)
-sourceFlowSink = sourceToFlow >> flowToSink
-
-sourceToFlow : (Flow, Stocks) -> (Flow, Stocks)
-sourceToFlow (f, ss) =
-  let (n, ss') = stocksOut (rate f) (source f) ss
-  in (flowIn n f, ss')
-
-flowToSink : (Flow, Stocks) -> (Flow, Stocks)
-flowToSink (f, ss) =
-  let (n, f') = flowOut f
-  in (f', stocksIn n (sink f) ss)
-
