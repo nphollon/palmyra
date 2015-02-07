@@ -19,7 +19,6 @@ new s f =
     flows = L.map (\(r, i, o) -> Pipe [] r i o) f
   in { ply=0, stocks=stocks, flows=flows }
 
-getInfo : System -> (List String, List String)
 getInfo sys = (stocksInfo sys.stocks, flowsInfo sys.flows)
 
 update plyLimit sys =

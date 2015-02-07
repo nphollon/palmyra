@@ -3,6 +3,7 @@ module System.Flow where
 import System.Stock (..)
 
 import List as L
+import String (concat)
 
 type alias Flows = List Flow
 
@@ -36,7 +37,11 @@ flowOut : Flow -> (Scalar, Flow)
 flowOut (Pipe (n::ns) r i o) = (n, Pipe ns r i o)
 
 rate (Pipe _ r _ _) = r
+
 endpoints (Pipe _ _ i o) = (i,o)
+
 source (Pipe _ _ i _) = i
+
 sink (Pipe _ _ _ o) = o
-flowInfo (Pipe _ _ i o) = i ++ " >> " ++ o
+
+flowInfo (Pipe _ _ i o) = concat [ i, " >> ", o ]
