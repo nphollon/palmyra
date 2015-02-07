@@ -7,9 +7,11 @@ import Graphics.Element as GE
 import List as L
 import Text (plainText)
 
-display sys time =
-  let clock = GC.collage 120 130 [ pendulum time |> GC.moveY 45 ]
-  in GE.flow GE.down [ clock, drawStocks (fst sys), drawFlows (snd sys) ]
+display (stocks, flows) time =
+  let
+    clock = GC.collage 120 130 [ pendulum time |> GC.moveY 45 ]
+    assets = placeStocks stocks
+  in GE.flow GE.down [ clock, drawStocks assets, drawFlows flows ]
 
 pendulum t =
   let
@@ -35,12 +37,16 @@ circlePositions n =
     angle i = degrees (i * 360 / nf)
   in L.map (polar 150 << angle) [ 1 .. nf ]
 
-drawStocks stocks = 
-  let labels = D.values stocks
-  in labels
-    |> L.map drawStock
-    |> L.map2 GC.move (circlePositions <| L.length labels)
-    |> GC.collage 500 500
+placeStocks stocks =
+  let 
+    dt = (/) (degrees 360) <| toFloat <| L.length <| D.keys stocks
+    draw k v t drawDict = D.insert k (t, drawStock v) drawDict
+    placeStock name label (t, placed) = (t + dt, draw name label t placed)
+  in D.foldl placeStock (0, D.empty) stocks |> snd
+
+drawStocks = 
+  let draw (angle, form) = GC.move (polar 150 angle) form
+  in GC.collage 500 500 << L.map draw << D.values
 
 drawStock label =
   plainText label 
