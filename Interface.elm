@@ -11,7 +11,7 @@ import Text (plainText)
 
 display sys time =
   let clock = GC.collage 120 130 [ pendulum time |> GC.moveY 45 ]
-  in GE.flow GE.down [ clock, drawStocks sys.stocks, drawFlows sys.flows ]
+  in GE.flow GE.down [ clock, drawStocks (fst sys), drawFlows (snd sys) ]
 
 pendulum t =
   let
@@ -27,12 +27,11 @@ pendulum t =
   in GC.group [ thread, digitalClock, bob ]
 
 drawStocks stocks = 
-  D.map drawStock stocks 
-  |> D.values
+  L.map drawStock stocks 
   |> L.intersperse (GE.spacer 10 1)
   |> GE.flow GE.right
 
-drawStock name size =
+drawStock (name, size) =
   let label = name ++ "\n" ++ (toString size)
   in plainText label 
      |> (GE.container 80 40 GE.middle)

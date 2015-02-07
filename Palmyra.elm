@@ -2,6 +2,7 @@ module Palmyra where
 
 import Interface
 import System
+import System (Stock(..))
 
 import Signal ((<~), (~), constant, foldp, Signal)
 import Maybe
@@ -10,7 +11,7 @@ import Time
 
 port speed : Maybe Float
 
-main = Interface.display <~ system ~ (fst <~ time)
+main = Interface.display <~ (System.getInfo <~ system) ~ (fst <~ time)
 
 timeDilation = Maybe.withDefault 1.0 speed
 plyPerSecond = 10
@@ -29,6 +30,6 @@ pause = foldp (always not) True Mouse.clicks
 
 startState = 
   let
-    stocks = [("start", 500), ("middle", 20), ("end", 7)]
-    flows = [("start","middle"), ("middle", "end")]
+    stocks = [("start", Charge 500), ("middle", Charge 20), ("end", Charge 7)]
+    flows = [(2, "start","middle"), (1, "middle", "end")]
   in System.new stocks flows
