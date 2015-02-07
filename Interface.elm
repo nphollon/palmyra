@@ -31,19 +31,17 @@ drawStocks stocks =
   |> L.intersperse (GE.spacer 10 1)
   |> GE.flow GE.right
 
-drawStock (name, size) =
-  let label = name ++ "\n" ++ (toString size)
-  in plainText label 
-     |> (GE.container 80 40 GE.middle)
-     |> GE.color C.lightYellow
+drawStock label =
+  plainText label 
+  |> (GE.container 80 40 GE.middle)
+  |> GE.color C.lightYellow
 
 drawFlows flows = 
   L.map drawFlow flows 
   |> L.intersperse (GE.spacer 10 1) 
   |> GE.flow GE.right
 
-drawFlow (source, sink) =
-  let label = "from " ++ source ++ " to " ++ sink
-  in plainText label 
-     |> (GE.container 200 40 GE.middle)
-     |> GE.color C.lightGreen
+drawFlow label =
+  plainText label 
+  |> (GE.container 200 40 GE.middle)
+  |> GE.color C.lightGreen

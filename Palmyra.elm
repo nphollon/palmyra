@@ -30,6 +30,6 @@ pause = foldp (always not) True Mouse.clicks
 
 startState = 
   let
-    stocks = [("start", Charge 500), ("middle", Charge 20), ("end", Charge 7)]
+    stocks = [("start", Ground), ("middle", Charge 20), ("end", Charge 7)]
     flows = [(2, "start","middle"), (1, "middle", "end")]
   in System.new stocks flows

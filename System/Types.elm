@@ -1,6 +1,7 @@
 module System.Types where
 
 import Dict as D
+import List as L
 import Maybe as M
 
 type alias Stocks = D.Dict Id Stock
@@ -34,11 +35,13 @@ getStock id ss = D.get id ss |> M.withDefault Ground
 setStock : Id -> Stock -> Stocks -> Stocks
 setStock = D.insert
 
-scalar : Stock -> Scalar
-scalar s =
-  case s of
-    Charge x -> x
-    Ground -> 0
+stocksInfo : Stocks -> List String
+stocksInfo = 
+  let stockInfo s = 
+    case s of
+      Charge x -> toString x
+      Ground -> "ground"
+  in D.values << D.map (\id s -> id ++ " : " ++ (stockInfo s))
 
 type alias Flows = List Flow
 type Flow = Pipe (List Scalar) Scalar Id Id
@@ -53,6 +56,10 @@ rate (Pipe _ r _ _) = r
 endpoints (Pipe _ _ i o) = (i,o)
 source (Pipe _ _ i _) = i
 sink (Pipe _ _ _ o) = o
+
+flowsInfo =
+  let flowInfo (Pipe _ _ i o) = i ++ " >> " ++ o
+  in L.map flowInfo
 
 type alias Scalar = Int
 type alias Id = String
