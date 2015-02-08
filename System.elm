@@ -8,8 +8,8 @@ import List as L
 
 type alias System = {
     ply:Int,
-    stocks:SS.Stocks,
-    flows:SF.Flows
+    stocks:SS.StockRepo,
+    flows:List SF.Flow
   }
 
 new : List SS.Stock -> List (Int, String, String) -> System
@@ -19,6 +19,7 @@ new s f =
     flows = L.map (\(r, i, o) -> SF.Pipe [] r i o) f
   in { ply=0, stocks=stocks, flows=flows }
 
+getInfo : System -> (D.Dict String String, List String)
 getInfo sys = (SS.stocksInfo sys.stocks, SF.flowsInfo sys.flows)
 
 update plyLimit sys =
@@ -27,5 +28,5 @@ update plyLimit sys =
 
 evolve : System -> System
 evolve { ply, stocks, flows } =
-  let (newFlows, newStocks) = L.foldr SF.addFlow ([], stocks) flows
-  in { ply=ply + 1, stocks=newStocks, flows=newFlows }
+  let (newFlow, newStocks) = L.foldr SF.addFlow ([], stocks) flows
+  in { ply=ply + 1, stocks=newStocks, flows=newFlow }

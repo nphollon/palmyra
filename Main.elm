@@ -16,6 +16,7 @@ main = Interface.display <~ (System.getInfo <~ system) ~ (fst <~ time)
 timeDilation = Maybe.withDefault 1.0 speed
 plyPerSecond = 10
 
+system : Signal System.System
 system = foldp System.update startState (snd <~ time)
 
 time = foldp tick (0,0) (Time.fpsWhen 60 pause)

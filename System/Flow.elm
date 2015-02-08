@@ -1,13 +1,12 @@
 module System.Flow where
 
-import System.Stock (..)
+import System.Stock as SS
+import System.Stock (StockRepo, Scalar, Id)
 
 import List as L
 import String (concat)
 
-type alias Flows = List Flow
-
-addFlow : Flow -> (Flows, Stocks) -> (Flows, Stocks)
+addFlow : Flow -> (List Flow, StockRepo) -> (List Flow, StockRepo)
 addFlow f (fs, ss) =
   let (f', ss') = sourceFlowSink (f, ss)
   in (f'::fs, ss')
@@ -17,18 +16,18 @@ flowsInfo = L.map flowInfo
 
 type Flow = Pipe (List Scalar) Scalar Id Id
 
-sourceFlowSink : (Flow, Stocks) -> (Flow, Stocks)
+sourceFlowSink : (Flow, StockRepo) -> (Flow, StockRepo)
 sourceFlowSink = sourceToFlow >> flowToSink
 
-sourceToFlow : (Flow, Stocks) -> (Flow, Stocks)
+sourceToFlow : (Flow, StockRepo) -> (Flow, StockRepo)
 sourceToFlow (f, ss) =
-  let (n, ss') = stocksOut (rate f) (source f) ss
+  let (n, ss') = SS.stocksOut (rate f) (source f) ss
   in (flowIn n f, ss')
 
-flowToSink : (Flow, Stocks) -> (Flow, Stocks)
+flowToSink : (Flow, StockRepo) -> (Flow, StockRepo)
 flowToSink (f, ss) =
   let (n, f') = flowOut f
-  in (f', stocksIn n (sink f) ss)
+  in (f', SS.stocksIn n (sink f) ss)
 
 flowIn : Scalar -> Flow -> Flow
 flowIn n (Pipe ns r i o) = Pipe (ns ++ [n]) r i o

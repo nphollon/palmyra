@@ -5,8 +5,9 @@ import Dict as D
 import Graphics.Collage as GC
 import Graphics.Element as GE
 import List as L
-import Text (plainText)
+import Text as T
 
+display : (D.Dict String String, List String) -> Float -> GE.Element
 display (stocks, flows) time =
   let
     clock = GC.collage 120 130 [ pendulum time |> GC.moveY 45 ]
@@ -20,7 +21,7 @@ pendulum t =
     thread = GC.traced (GC.solid C.black) (GC.segment (0, 0) bobXY)
     bob = GC.filled C.red (GC.circle 10) |> GC.move bobXY
 
-    ticks = t |> floor |> toString |> plainText |> GC.toForm
+    ticks = t |> floor |> toString |> T.plainText |> GC.toForm
     digitalClock = GC.group [ GC.filled C.lightBlue (GC.rect 50 20), ticks ] |> GC.moveY 10
   in GC.group [ thread, digitalClock, bob ]
 
@@ -49,7 +50,7 @@ drawStocks =
   in GC.collage 500 500 << L.map draw << D.values
 
 drawStock label =
-  plainText label 
+  T.plainText label 
   |> (GE.container 120 30 GE.middle)
   |> GE.color C.lightYellow
   |> GC.toForm
@@ -60,6 +61,6 @@ drawFlows flows =
   |> GE.flow GE.right
 
 drawFlow label =
-  plainText label 
+  T.plainText label 
   |> (GE.container 160 30 GE.middle)
   |> GE.color C.lightGreen
