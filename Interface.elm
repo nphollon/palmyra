@@ -47,9 +47,12 @@ drawSystem components =
     dt = (/) (degrees 360) <| toFloat <| L.length nodes
     angleForNode node (t, tDict) = (t + dt, D.insert (SD.id node) t tDict)
     angles = L.foldl angleForNode (0, D.empty) nodes |> snd
-  in L.map (drawComponent angles) nodes |> GC.collage 500 500
+  in L.map (drawComponent angles) components |> GC.collage 500 500
 
 drawComponent : D.Dict Int Float -> SD.Component -> GC.Form
 drawComponent angles component =
-  let angle = D.get (SD.id component) angles |> M.withDefault 0
-  in SD.label component |> drawStock |> GC.move (polar 150 angle)
+  let
+    getPoint r i = D.get i angles |> M.withDefault 0 |> polar r
+  in case component of
+    SD.Node i s -> GC.move (getPoint 150 i) (drawStock s)
+    SD.Arc i j _ -> GC.segment (getPoint 150 i) (getPoint 150 j) |> GC.traced (GC.solid C.black)
