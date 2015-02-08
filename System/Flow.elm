@@ -4,7 +4,28 @@ import System.Stock as SS
 import System.Stock (StockRepo, Scalar, Id)
 
 import List as L
+import Maybe as M
 import String (concat)
+
+type alias FlowData = (Scalar, String, String)
+
+initAll : StockRepo -> List FlowData -> List Flow
+initAll ss fs = 
+  let
+    rawInit = L.map (init ss)
+    removeNothing = L.filter ((/=) M.Nothing)
+    extractValue = L.map (\(Just x) -> x)
+  in rawInit fs |> removeNothing |> extractValue
+
+init : StockRepo -> FlowData -> M.Maybe Flow
+init ss (rate, sourceName, sinkName) =
+  let
+    sourceId = SS.findByName sourceName ss
+    sinkId = SS.findByName sinkName ss
+  in case (sourceId, sinkId) of
+    (M.Just a, M.Just b) -> M.Just (Pipe [] rate a b)
+    _ -> M.Nothing
+
 
 addFlow : Flow -> (List Flow, StockRepo) -> (List Flow, StockRepo)
 addFlow f (fs, ss) =
@@ -43,4 +64,4 @@ source (Pipe _ _ i _) = i
 
 sink (Pipe _ _ _ o) = o
 
-flowInfo (Pipe _ _ i o) = concat [ i, " >> ", o ]
+flowInfo (Pipe _ _ i o) = (toString i) ++ " >> " ++ (toString o)

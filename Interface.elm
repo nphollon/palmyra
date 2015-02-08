@@ -7,7 +7,7 @@ import Graphics.Element as GE
 import List as L
 import Text as T
 
-display : (D.Dict String String, List String) -> Float -> GE.Element
+display : (D.Dict Int String, List String) -> Float -> GE.Element
 display (stocks, flows) time =
   let
     clock = GC.collage 120 130 [ pendulum time |> GC.moveY 45 ]

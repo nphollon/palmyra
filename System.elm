@@ -12,14 +12,14 @@ type alias System = {
     flows:List SF.Flow
   }
 
-new : List SS.Stock -> List (Int, String, String) -> System
+new : List SS.Stock -> List SF.FlowData -> System
 new s f = 
   let
     stocks = SS.repository s
-    flows = L.map (\(r, i, o) -> SF.Pipe [] r i o) f
+    flows = SF.initAll stocks f
   in { ply=0, stocks=stocks, flows=flows }
 
-getInfo : System -> (D.Dict String String, List String)
+getInfo : System -> (D.Dict SS.Id String, List String)
 getInfo sys = (SS.stocksInfo sys.stocks, SF.flowsInfo sys.flows)
 
 update plyLimit sys =

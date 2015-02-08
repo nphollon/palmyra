@@ -3,6 +3,7 @@ module Palmyra where
 import Interface
 import System
 import System.Stock (Stock(..))
+import System.Flow (Flow)
 
 import Maybe
 import Mouse

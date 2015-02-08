@@ -8,9 +8,9 @@ import String as S
 type alias StockRepo = D.Dict Id Stock
 
 repository : List Stock -> StockRepo
-repository = 
-  let addToRepo s dict = D.insert (name s) s dict
-  in L.foldr addToRepo D.empty
+repository stocks = 
+  let addToRepo s (i, dict) = (i + 1, D.insert i s dict)
+  in L.foldr addToRepo (1, D.empty) stocks |> snd
 
 stocksIn : Scalar -> Id -> StockRepo -> StockRepo
 stocksIn n id ss =
@@ -22,10 +22,18 @@ stocksOut n id ss =
   let (n', s') = getStock id ss |> stockOut n
   in (n', setStock id s' ss)
 
-stocksInfo = D.map (\id s -> S.concat [ id, " : ", stockInfo s ])
+findByName : String -> StockRepo -> M.Maybe Id
+findByName query ss =
+  let matches = D.filter (\id v -> name v == query) ss |> D.keys
+  in case (L.length matches) of
+    1 -> M.Just (L.head matches)
+    _ -> M.Nothing
+
+stocksInfo : StockRepo -> D.Dict Id String
+stocksInfo = D.map (always stockInfo)
 
 
-type Stock = Ground | Charge Id Scalar | Mass Id Scalar | Cap Id Scalar Scalar
+type Stock = Ground | Charge String Scalar | Mass String Scalar | Cap String Scalar Scalar
 
 stockIn : Scalar -> Stock -> Stock
 stockIn dx s = 
@@ -49,12 +57,14 @@ getStock id ss = D.get id ss |> M.withDefault Ground
 setStock : Id -> Stock -> StockRepo -> StockRepo
 setStock = D.insert
 
-stockInfo s = 
+stockInfo s = (name s) ++ " : " ++ (value s)
+
+value s =
   case s of
-    Charge n x -> toString x
+    Charge _ x -> toString x
     Mass n x -> S.concat [ "(", toString x, ")" ]
     Cap n c x -> S.concat [ "[", toString x, "]" ]
-    Ground -> "ground"
+    Ground -> "∞"
 
 name s =
   case s of
@@ -65,4 +75,4 @@ name s =
 
 
 type alias Scalar = Int
-type alias Id = String
+type alias Id = Int
