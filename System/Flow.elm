@@ -5,7 +5,6 @@ import System.Stock (StockRepo, Scalar, Id)
 
 import List as L
 import Maybe as M
-import String (concat)
 
 type alias FlowData = (Scalar, String, String)
 

@@ -3,7 +3,6 @@ module System.Stock where
 import List as L
 import Dict as D
 import Maybe as M
-import String as S
 
 type alias StockRepo = D.Dict Id Stock
 
@@ -62,8 +61,8 @@ stockInfo s = (name s) ++ " : " ++ (value s)
 value s =
   case s of
     Charge _ x -> toString x
-    Mass n x -> S.concat [ "(", toString x, ")" ]
-    Cap n c x -> S.concat [ "[", toString x, "]" ]
+    Mass _ x -> "(" ++ toString x ++ ")"
+    Cap _ c x -> "[" ++ toString x ++ "/" ++ toString c ++ "]"
     Ground -> "∞"
 
 name s =

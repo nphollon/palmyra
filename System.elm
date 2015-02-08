@@ -2,6 +2,7 @@ module System where
 
 import System.Stock as SS
 import System.Flow as SF
+import System.Data as SD
 
 import Dict as D
 import List as L
@@ -19,8 +20,7 @@ new s f =
     flows = SF.initAll stocks f
   in { ply=0, stocks=stocks, flows=flows }
 
-getInfo : System -> (D.Dict SS.Id String, List String)
-getInfo sys = (SS.stocksInfo sys.stocks, SF.flowsInfo sys.flows)
+getInfo sys = SD.systemComponents sys.stocks sys.flows
 
 update plyLimit sys =
   if | sys.ply < plyLimit -> evolve sys
