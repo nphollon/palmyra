@@ -1,8 +1,4 @@
-opacity = 1000
-outsideTemp = 265
-targetTemp = 290
-triggerTemp = 287
-heat = 0.1
+module Thermostat (thermostat) where
 
 type System = { stocks: Dict Id Stock, flows: List Flow }
 
@@ -16,6 +12,12 @@ type alias Trigger = Scalar -> Scalar -> Bool
 
 type Scalar = Ground | Mass Float
 type alias Id = Int
+
+opacity = 1000
+outsideTemp = 265
+targetTemp = 290
+triggerTemp = 287
+heat = 0.1
 
 thermostat = {
     stocks = Dict.fromList [ (1, furnace), (2, room), (3, ground) ],
