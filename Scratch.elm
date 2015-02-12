@@ -1,3 +1,5 @@
+import Arc
+
 import Color as C
 import Dict as D
 import Graphics.Collage as GC
@@ -6,8 +8,14 @@ import Text as T
 
 type alias Point = (Float, Float)
 
-stocks = D.fromList [(8, "Eins"), (3, "Zwei"), (7, "Drei"), (4, "Vier"), (1, "Fünf")]
-flows = [(4, 1), (7, 1), (7, 4), (3, 4), (8, 4)]
+stocks = D.fromList [(1, "Eins"), (2, "Zwei"), (3, "Drei"), (4, "Vier"), (5, "Fünf")]
+flows = [
+  (1,2), (1,3), (1,4), (1,5),
+  (2,1), (2,3), (2,4), (2,5),
+  (3,1), (3,2), (3,4), (3,5),
+  (4,1), (4,2), (4,3), (4,5),
+  (5,1), (5,2), (5,3), (5,4)
+  ]
 
 main = GC.collage 500 500 drawAllStocks
 
@@ -40,11 +48,7 @@ drawFlow pos flow =
     otherwise -> GC.group []
 
 arc : Point -> Point -> GC.Path
-arc (x1, y1) (x2, y2) =
-  let
-    xmid = 0.6 * x2 + 0.4 * x1
-    ymid = 0.6 * y1 + 0.4 * y2
-  in GC.path [ (x1, y1), (xmid, ymid), (x2, y2) ]
+arc = Arc.arc 30 5
 
 graphIds : D.Dict Int a -> D.Dict Int (Point, Point)
 graphIds dict =

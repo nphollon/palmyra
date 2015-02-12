@@ -9,7 +9,7 @@ import Signal ((<~))
 cX = 1000
 cY = 500
 
-main = plotArc 5 (0, 0) << canvasCoords <~ Mouse.position
+main = plotArc 100 (0, 0) << canvasCoords <~ Mouse.position
 
 canvasCoords : (Int, Int) -> (Float, Float)
 canvasCoords (x, y) = (toFloat x - cX/2, cY/2 - toFloat y)
@@ -18,9 +18,9 @@ plotArc h head tail =
   GC.collage cX cY [ 
   GC.circle 5 |> GC.filled C.red |> GC.move head,
   GC.circle 5 |> GC.filled C.blue |> GC.move tail,
-  arc 100 tail head h |> GC.traced GC.defaultLine  ]
+  arc 30 h tail head |> GC.traced GC.defaultLine  ]
 
-arc res tail head h =
+arc res h tail head =
   let
     mid = midpoint head tail
     l = length tail head
@@ -30,7 +30,7 @@ arc res tail head h =
 
     arcLength = 2 * atan2 (0.5 * l) (r - h)
     tailAngle = rotationAngle arcCenter tail
-    incrAngle i = arcLength * i * 0.01 + tailAngle
+    incrAngle i = arcLength * i / res + tailAngle
 
     points = L.map (polar arcCenter r << incrAngle) [ 0 .. res ]
   in GC.path points
