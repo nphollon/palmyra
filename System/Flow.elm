@@ -9,12 +9,7 @@ import Maybe as M
 type alias FlowData = (Scalar, String, String)
 
 initAll : StockRepo -> List FlowData -> List Flow
-initAll ss fs = 
-  let
-    rawInit = L.map (init ss)
-    removeNothing = L.filter ((/=) M.Nothing)
-    extractValue = L.map (\(Just x) -> x)
-  in rawInit fs |> removeNothing |> extractValue
+initAll = L.filterMap << init
 
 init : StockRepo -> FlowData -> M.Maybe Flow
 init ss (rate, sourceName, sinkName) =
