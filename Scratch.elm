@@ -74,7 +74,7 @@ keyPositions n i =
     n' = toFloat n
     i' = toFloat i
     angle = (i' - 0.5) / n' * degrees 360
-    nodePosition = polar 70 angle
+    nodePosition = polar 100 angle
 
     column = if i * 2 > n then -1 else 1
     row = if i * 2 > n then n' + 1 - i' else i'
