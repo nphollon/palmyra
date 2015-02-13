@@ -1,4 +1,4 @@
-import Arc
+import Geometry as Geo
 
 import Color as C
 import Dict as D
@@ -8,13 +8,15 @@ import Text as T
 
 type alias Point = (Float, Float)
 
-stocks = D.fromList [(1, "Eins"), (2, "Zwei"), (3, "Drei"), (4, "Vier"), (5, "Fünf")]
+stocks = D.fromList [(1, "Eins"), (2, "Zwei"), (3, "Drei"), (4, "Vier"), (5, "Fünf"), (6, "Sechs"), (7, "Sieben")]
 flows = [
-  (1,2), (1,3), (1,4), (1,5),
-  (2,1), (2,3), (2,4), (2,5),
-  (3,1), (3,2), (3,4), (3,5),
-  (4,1), (4,2), (4,3), (4,5),
-  (5,1), (5,2), (5,3), (5,4)
+  (1,2), (1,3), (1,4), (1,5), (1,6), (1,7),
+  (2,1), (2,3), (2,4), (2,5), (2,6), (2,7),
+  (3,1), (3,2), (3,4), (3,5), (3,6), (3,7),
+  (4,1), (4,2), (4,3), (4,5), (4,6), (4,7),
+  (5,1), (5,2), (5,3), (5,4), (5,6), (5,7),
+  (6,1), (6,2), (6,3), (6,4), (6,5), (6,7),
+  (7,1), (7,2), (7,3), (7,4), (7,5), (7,6)
   ]
 
 main = GC.collage 500 500 drawAllStocks
@@ -48,7 +50,11 @@ drawFlow pos flow =
     otherwise -> GC.group []
 
 arc : Point -> Point -> GC.Path
-arc = Arc.arc 30 5
+arc t h = 
+  let 
+    margin = 15
+    isWithinBounds p = not (Geo.isWithin margin t p) && not (Geo.isWithin margin h p)
+  in Geo.arc 5 t h |> L.filter isWithinBounds |> GC.path
 
 graphIds : D.Dict Int a -> D.Dict Int (Point, Point)
 graphIds dict =
