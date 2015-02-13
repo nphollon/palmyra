@@ -1,7 +1,6 @@
 module Geometry where
 
 import Array as A
-import Graphics.Collage as GC
 import List as L
 
 arc : Float -> Point -> Point -> List Point
@@ -27,6 +26,9 @@ distance (x1, y1) (x2, y2) = sqrt ((x1 - x2)^2 + (y1 - y2)^2)
 
 rotationAngle (x1, y1) (x2, y2) = atan2 (y2 - y1) (x2 - x1) 
 
+rotate : Float -> Point -> Point -> Point
+rotate a c p = polar c (distance c p) (a + rotationAngle c p)
+
 type alias Point = (Float, Float)
 
 polar : Point -> Float -> Float -> Point
@@ -38,3 +40,11 @@ polar (x0, y0) r theta =
 
 isWithin : Float -> Point -> Point -> Bool
 isWithin radius origin point = distance origin point <= radius
+
+arrowhead : Float -> Float -> Point -> Point -> List Point
+arrowhead r width p1 dir =
+  let
+    incline = rotationAngle p1 dir
+    p2 = polar p1 r (incline + 0.5 * width)
+    p3 = polar p1 r (incline - 0.5 * width)
+  in [ p1, p2, p3 ]
