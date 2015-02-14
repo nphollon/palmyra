@@ -10,7 +10,7 @@ import Text as T
 
 type alias Point = (Float, Float)
 
-s = [(5, "Fünf"), (3, "Drei"), (4, "Vier"),  (6, "Sechs"), (7, "Sieben"), (2, "Zwei"), (1, "Eins")] |> A.fromList
+s = [(5, "Fünf"), (3, "Drei"), (4, "Vier"), (6, "Sechs"), (7, "Sieben"), (2, "Zwei"), (1, "Eins")] |> A.fromList
 f = [
   (1,2), (1,6),
   (2,4), (2,5),
@@ -21,10 +21,11 @@ f = [
   (7,2), (7,6)
   ]
 
-main =
-  let diagram stocks = drawSystem stocks f |> GC.collage 500 500
-  in GE.flow GE.left [ diagram s, diagram (A.slice 0 -1 s) ]
+main = display s f
 
+display stocks flows = drawSystem stocks flows |> GC.collage 500 500
+
+drawSystem : A.Array (Int, String) -> List (Int, Int) -> List GC.Form
 drawSystem stocks flows =
   let
     pos = addPositions stocks
@@ -43,7 +44,7 @@ drawStock (label, (nodePosition, infoboxPosition)) =
     link = GC.traced (GC.dotted C.black) <| GC.segment nodePosition infoboxPosition
   in GC.group [ link, node , infobox ]
 
-drawFlow : D.Dict comparable (b, (Point, Point)) -> (comparable, comparable) -> GC.Form
+drawFlow : D.Dict comparable (a, (Point, Point)) -> (comparable, comparable) -> GC.Form
 drawFlow pos flow =
   let
     tail = D.get (fst flow) pos
@@ -57,7 +58,7 @@ arc t h =
   let 
     margin = 15
     isWithinBounds p = not (Geo.isWithin margin t p) && not (Geo.isWithin margin h p)
-    arc = Geo.arc 5 t h |> L.filter isWithinBounds
+    arc = Geo.arc 5 h t |> L.filter isWithinBounds
     arrowhead = Geo.arrowhead 10 (degrees 45) (L.head arc) (L.head <| L.tail arc)
   in GC.group [
       arc |> GC.path |> GC.traced (GC.solid C.black),
