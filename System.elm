@@ -22,6 +22,7 @@ new s f =
 
 getInfo sys = SD.systemComponents sys.stocks sys.flows
 
+update : Int -> System -> System
 update plyLimit sys =
   if | sys.ply < plyLimit -> evolve sys
      | otherwise -> sys
