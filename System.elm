@@ -4,6 +4,7 @@ import System.Stock as SS
 import System.Flow as SF
 import System.Data as SD
 
+import Array as A
 import Dict as D
 import List as L
 
@@ -20,7 +21,8 @@ new s f =
     flows = SF.initAll stocks f
   in { ply=0, stocks=stocks, flows=flows }
 
-getInfo sys = SD.systemComponents sys.stocks sys.flows
+getInfo : System -> (List (Int, String), List (Int, Int))
+getInfo sys = (SS.stocksInfo sys.stocks, SF.flowsInfo sys.flows)
 
 update : Int -> System -> System
 update plyLimit sys =

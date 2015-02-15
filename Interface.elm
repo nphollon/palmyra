@@ -1,5 +1,6 @@
 module Interface where
 
+import Interface.System as I2
 import System.Data as SD
 
 import Color as C
@@ -10,11 +11,12 @@ import List as L
 import Maybe as M
 import Text as T
 
-display : List SD.Component -> Float -> GE.Element
-display components time =
+display : (List (Int, String), List (Int, Int)) -> Float -> GE.Element
+display (stocks, flows) time =
   let
     clock = GC.collage 120 130 [ pendulum time |> GC.moveY 45 ]
-  in GE.flow GE.down [ clock, drawSystem components ]
+    systemDrawing = I2.drawSystem stocks flows |> GC.collage 500 500 
+  in GE.flow GE.down [ clock, systemDrawing ]
 
 pendulum t =
   let
@@ -33,26 +35,3 @@ polar r theta =
     x = r * (sin theta)
     y = r * (cos theta) |> negate
   in (x,y)
-
-drawStock label =
-  T.plainText label 
-  |> (GE.container 120 30 GE.middle)
-  |> GE.color C.lightYellow
-  |> GC.toForm
-
-drawSystem : List SD.Component -> GE.Element
-drawSystem components =
-  let
-    nodes = L.filter SD.isNode components
-    dt = (/) (degrees 360) <| toFloat <| L.length nodes
-    angleForNode node (t, tDict) = (t + dt, D.insert (SD.id node) t tDict)
-    angles = L.foldl angleForNode (0, D.empty) nodes |> snd
-  in L.map (drawComponent angles) components |> GC.collage 500 500
-
-drawComponent : D.Dict Int Float -> SD.Component -> GC.Form
-drawComponent angles component =
-  let
-    getPoint r i = D.get i angles |> M.withDefault 0 |> polar r
-  in case component of
-    SD.Node i s -> GC.move (getPoint 150 i) (drawStock s)
-    SD.Arc i j _ -> GC.segment (getPoint 150 i) (getPoint 150 j) |> GC.traced (GC.solid C.black)

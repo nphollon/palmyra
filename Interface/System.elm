@@ -1,3 +1,5 @@
+module Interface.System (drawSystem) where
+
 import Geometry as Geo
 
 import Array as A
@@ -10,25 +12,10 @@ import Text as T
 
 type alias Point = (Float, Float)
 
-s = [(5, "Fünf"), (3, "Drei"), (4, "Vier"), (6, "Sechs"), (7, "Sieben"), (2, "Zwei"), (1, "Eins")] |> A.fromList
-f = [
-  (1,2), (1,6),
-  (2,4), (2,5),
-  (3,5), (3,7),
-  (4,3), (4,7),
-  (5,1), (5,3),
-  (6,1), (6,4),
-  (7,2), (7,6)
-  ]
-
-main = display s f
-
-display stocks flows = drawSystem stocks flows |> GC.collage 500 500
-
-drawSystem : A.Array (Int, String) -> List (Int, Int) -> List GC.Form
+drawSystem : List (Int, String) -> List (Int, Int) -> List GC.Form
 drawSystem stocks flows =
   let
-    pos = addPositions stocks
+    pos = A.fromList stocks |> addPositions
     stockForms = L.map drawStock (D.values pos)
     flowForms = L.map (drawFlow pos) flows
   in flowForms ++ stockForms

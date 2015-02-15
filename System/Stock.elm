@@ -28,8 +28,8 @@ findByName query ss =
     1 -> M.Just (L.head matches)
     _ -> M.Nothing
 
-stocksInfo : StockRepo -> D.Dict Id String
-stocksInfo = D.map (always stockInfo)
+stocksInfo : StockRepo -> List (Id, String)
+stocksInfo = D.map (always stockInfo) >> D.toList
 
 
 type Stock = Ground | Charge String Scalar | Mass String Scalar | Cap String Scalar Scalar

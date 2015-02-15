@@ -26,6 +26,7 @@ addFlow f (fs, ss) =
   let (f', ss') = sourceFlowSink (f, ss)
   in (f'::fs, ss')
 
+flowsInfo : List Flow -> List (Int, Int)
 flowsInfo = L.map flowInfo
 
 
@@ -58,4 +59,4 @@ source (Pipe _ _ i _) = i
 
 sink (Pipe _ _ _ o) = o
 
-flowInfo (Pipe _ _ i o) = (toString i) ++ " >> " ++ (toString o)
+flowInfo (Pipe _ _ i o) = (i, o)
