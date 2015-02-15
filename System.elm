@@ -2,7 +2,6 @@ module System where
 
 import System.Stock as SS
 import System.Flow as SF
-import System.Data as SD
 
 import Array as A
 import Dict as D
