@@ -8,7 +8,7 @@ discrete : Float -> Float -> Int
 discrete plyPerSecond t = t * plyPerSecond |> floor
 
 time : Float -> Signal Float
-time dilation = Signal.foldp (tick dilation) 0 (Time.fpsWhen 60 pause)
+time dilation = Signal.foldp (tick dilation) 0 (Time.fpsWhen 33 pause)
 
 pause : Signal Bool
 pause = Signal.foldp (always not) True Mouse.clicks

@@ -1,7 +1,6 @@
-module Geometry where
+module Interface.Geometry where
 
 import Array as A
-import List as L
 
 arc : Float -> Point -> Point -> List Point
 arc h head tail =

@@ -1,24 +1,24 @@
-module Interface.System (drawSystem) where
+module Interface.System (draw) where
 
-import Geometry as Geo
+import Interface.Geometry as Geo
 
 import Array as A
 import Color as C
 import Dict as D
 import Graphics.Collage as GC
-import Graphics.Element as GE
+import Graphics.Element (Element)
 import List as L
 import Text as T
 
 type alias Point = (Float, Float)
 
-drawSystem : List (Int, String) -> List (Int, Int) -> List GC.Form
-drawSystem stocks flows =
+draw : List (Int, String) -> List (Int, Int) -> Element
+draw stocks flows =
   let
     pos = A.fromList stocks |> addPositions
     stockForms = L.map drawStock (D.values pos)
     flowForms = L.map (drawFlow pos) flows
-  in flowForms ++ stockForms
+  in GC.collage 500 300 (flowForms ++ stockForms)
 
 drawStock : (String, (Point, Point)) -> GC.Form
 drawStock (label, (nodePosition, infoboxPosition)) =

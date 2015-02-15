@@ -3,13 +3,10 @@ module Palmyra where
 import Interface
 import System
 import System.Stock (Stock(..))
-import System.Flow (Flow)
 import Timing
 
-import Graphics.Element (Element)
 import Maybe
-import Mouse
-import Signal ((<~), (~), constant, foldp, Signal)
+import Signal ((<~), (~), foldp)
 
 port speed : Maybe Float
 timeDilation = Maybe.withDefault 1.0 speed
@@ -22,11 +19,8 @@ startState =
   in System.new stocks flows
 
 main = 
-  let t = Timing.time timeDilation
+  let
+    t = Timing.time timeDilation
+    display = Interface.display << System.getInfo
+    systemUpdate = foldp (System.update << Timing.discrete plyPerSecond)
   in display <~ systemUpdate startState t ~ t
-
-display : System.System -> Float -> Element
-display = Interface.display << System.getInfo
-
-systemUpdate : System.System -> Signal Float -> Signal System.System
-systemUpdate = foldp (System.update << Timing.discrete plyPerSecond)
