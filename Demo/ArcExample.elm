@@ -1,4 +1,4 @@
-import Geometry as Geo
+import Interface.Geometry as Geo
 
 import Color as C
 import Graphics.Collage as GC

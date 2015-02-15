@@ -1,5 +1,4 @@
-import Interface.System (drawSystem)
-import Graphics.Collage (collage)
+import Interface.System
 
 s = [(5, "Fünf"), (3, "Drei"), (4, "Vier"), (6, "Sechs"), (7, "Sieben"), (2, "Zwei"), (1, "Eins")]
 f = [
@@ -14,4 +13,4 @@ f = [
 
 main = display s f
 
-display stocks flows = drawSystem stocks flows |> collage 500 500
+display stocks flows = Interface.System.draw stocks flows
