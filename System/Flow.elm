@@ -4,25 +4,21 @@ import System.Stock as SS
 import System.Stock (StockRepo, Id)
 
 import List as L
+import Dict as D
 import Maybe as M
 
-type alias FlowData = (Float, String, String)
 type Flow = Pipe (List Amount) Rate Id Id
 type alias Id = Int
 type alias Amount = Float
 type alias Rate = Float
 
-initAll : StockRepo -> List FlowData -> List Flow
+initAll : StockRepo -> List (Rate, Id, Id) -> List Flow
 initAll = L.filterMap << init
 
-init : StockRepo -> FlowData -> M.Maybe Flow
-init ss (rate, sourceName, sinkName) =
-  let
-    sourceId = SS.findByName sourceName ss
-    sinkId = SS.findByName sinkName ss
-  in case (sourceId, sinkId) of
-    (M.Just a, M.Just b) -> M.Just (Pipe [] rate a b)
-    _ -> M.Nothing
+init : StockRepo -> (Rate, Id, Id) -> M.Maybe Flow
+init ss (rate, sourceId, sinkId) =
+  if | D.member sourceId ss && D.member sinkId ss -> M.Just (Pipe [] rate sourceId sinkId)
+     | otherwise -> M.Nothing
 
 
 addFlow : Flow -> (List Flow, StockRepo) -> (List Flow, StockRepo)

@@ -13,10 +13,13 @@ type alias System = {
     flows:List SF.Flow
   }
 
-new : List SS.Stock -> List SF.FlowData -> System
+type alias Id = Int
+type alias Rate = Float
+
+new : List (Id, SS.Stock) -> List (Rate, Id, Id) -> System
 new s f = 
   let
-    stocks = SS.repository s
+    stocks = D.fromList s
     flows = SF.initAll stocks f
   in { ply=0, stocks=stocks, flows=flows }
 

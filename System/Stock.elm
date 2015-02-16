@@ -24,13 +24,6 @@ stocksOut n id ss =
   let (n', s') = getStock id ss |> stockOut n
   in (n', setStock id s' ss)
 
-findByName : String -> StockRepo -> M.Maybe Id
-findByName query ss =
-  let matches = D.filter (\id v -> name v == query) ss |> D.keys
-  in case (L.length matches) of
-    1 -> M.Just (L.head matches)
-    _ -> M.Nothing
-
 stocksInfo : StockRepo -> List (Id, String)
 stocksInfo = D.map (always stockInfo) >> D.toList
 
