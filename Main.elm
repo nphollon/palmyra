@@ -14,8 +14,8 @@ plyPerSecond = 10
 
 startState = 
   let
-    stocks = [ Mass "start" 200, Cap "middle" 30 20, Mass "end" 0, Ground, Charge "Happiness" -1 ]
-    flows = [(1, "start","middle"), (1, "middle", "end"), (2, "ground", "end")]
+    stocks = [ Mass "start" 200, Mass "middle" 20, Mass "end" 0, Ground "The Void" ]
+    flows = [(1, "start","middle"), (1, "middle", "end"), (2, "The Void", "end")]
   in System.new stocks flows
 
 main = 

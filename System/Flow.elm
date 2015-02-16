@@ -1,12 +1,16 @@
 module System.Flow where
 
 import System.Stock as SS
-import System.Stock (StockRepo, Scalar, Id)
+import System.Stock (StockRepo, Id)
 
 import List as L
 import Maybe as M
 
-type alias FlowData = (Scalar, String, String)
+type alias FlowData = (Float, String, String)
+type Flow = Pipe (List Amount) Rate Id Id
+type alias Id = Int
+type alias Amount = Float
+type alias Rate = Float
 
 initAll : StockRepo -> List FlowData -> List Flow
 initAll = L.filterMap << init
@@ -29,9 +33,6 @@ addFlow f (fs, ss) =
 flowsInfo : List Flow -> List (Int, Int)
 flowsInfo = L.map flowInfo
 
-
-type Flow = Pipe (List Scalar) Scalar Id Id
-
 sourceFlowSink : (Flow, StockRepo) -> (Flow, StockRepo)
 sourceFlowSink = sourceToFlow >> flowToSink
 
@@ -45,10 +46,10 @@ flowToSink (f, ss) =
   let (n, f') = flowOut f
   in (f', SS.stocksIn n (sink f) ss)
 
-flowIn : Scalar -> Flow -> Flow
+flowIn : Amount -> Flow -> Flow
 flowIn n (Pipe ns r i o) = Pipe (ns ++ [n]) r i o
 
-flowOut : Flow -> (Scalar, Flow)
+flowOut : Flow -> (Amount, Flow)
 flowOut (Pipe (n::ns) r i o) = (n, Pipe ns r i o)
 
 rate (Pipe _ r _ _) = r

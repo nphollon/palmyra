@@ -5,18 +5,21 @@ import Dict as D
 import Maybe as M
 
 type alias StockRepo = D.Dict Id Stock
+type Stock = Ground String | Mass String Amount
+type alias Id = Int
+type alias Amount = Float
 
 repository : List Stock -> StockRepo
 repository stocks = 
   let addToRepo s (i, dict) = (i + 1, D.insert i s dict)
   in L.foldr addToRepo (1, D.empty) stocks |> snd
 
-stocksIn : Scalar -> Id -> StockRepo -> StockRepo
+stocksIn : Amount -> Id -> StockRepo -> StockRepo
 stocksIn n id ss =
   let s' = getStock id ss |> stockIn n
   in setStock id s' ss
 
-stocksOut : Scalar -> Id -> StockRepo -> (Scalar, StockRepo)
+stocksOut : Amount -> Id -> StockRepo -> (Amount, StockRepo)
 stocksOut n id ss =
   let (n', s') = getStock id ss |> stockOut n
   in (n', setStock id s' ss)
@@ -31,27 +34,20 @@ findByName query ss =
 stocksInfo : StockRepo -> List (Id, String)
 stocksInfo = D.map (always stockInfo) >> D.toList
 
-
-type Stock = Ground | Charge String Scalar | Mass String Scalar | Cap String Scalar Scalar
-
-stockIn : Scalar -> Stock -> Stock
+stockIn : Amount -> Stock -> Stock
 stockIn dx s = 
   case s of 
-    Charge n x -> Charge n (x + dx)
     Mass n x -> Mass n (x + dx)
-    Cap n c x -> if x + dx < c then Cap n c (x + dx) else Cap n c c
-    Ground -> Ground
+    Ground n -> Ground n
 
-stockOut : Scalar -> Stock -> (Scalar, Stock)
+stockOut : Amount -> Stock -> (Amount, Stock)
 stockOut dx s =
   case s of
-    Charge n x -> (dx, Charge n (x - dx))
-    Mass n x -> if dx < x then (dx, Mass n (x - dx)) else (x, Mass n 0)
-    Cap n c x -> if dx < x then (dx, Cap n c (x - dx)) else (x, Cap n c 0)
-    Ground -> (dx, Ground)
+    Mass n x -> if x > dx then (dx, Mass n (x - dx)) else (x, Mass n 0)
+    Ground n -> (dx, Ground n)
 
 getStock : Id -> StockRepo -> Stock
-getStock id ss = D.get id ss |> M.withDefault Ground
+getStock id ss = D.get id ss |> M.withDefault (Ground "ground")
 
 setStock : Id -> Stock -> StockRepo -> StockRepo
 setStock = D.insert
@@ -60,18 +56,10 @@ stockInfo s = (name s) ++ " : " ++ (value s)
 
 value s =
   case s of
-    Charge _ x -> toString x
     Mass _ x -> "(" ++ toString x ++ ")"
-    Cap _ c x -> "[" ++ toString x ++ "/" ++ toString c ++ "]"
-    Ground -> "∞"
+    Ground n -> "∞"
 
 name s =
   case s of
-    Charge n _ -> n
     Mass n _ -> n
-    Cap n _ _ -> n
-    Ground -> "ground"
-
-
-type alias Scalar = Int
-type alias Id = Int
+    Ground n -> n
