@@ -13,15 +13,19 @@ type alias System = {
     flows:List SF.Flow
   }
 
+type alias SystemParams = {
+  stocks:SS.StockRepo,
+  flows:List (SF.StockLink {})
+}
+
 type alias Id = Int
 type alias Rate = Float
 
-new : List (Id, SS.Stock) -> List (Rate, Id, Id) -> System
-new s f = 
-  let
-    stocks = D.fromList s
-    flows = SF.initAll stocks f
-  in { ply=0, stocks=stocks, flows=flows }
+new : SystemParams -> System
+new sys = { ply = 0
+          , stocks = sys.stocks
+          , flows = L.map SF.new sys.flows
+        }
 
 getInfo : System -> (List (Int, String), List (Int, Int))
 getInfo sys = (SS.stocksInfo sys.stocks, SF.flowsInfo sys.flows)

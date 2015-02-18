@@ -1,12 +1,6 @@
-module CompoundInterest (bankAccount) where 
+module Data.CompoundInterest (bankAccount) where 
 
-type Flow = { source: Id, sink: Id, state: Id, states: Dict Id State }
-type State = { flux: Flux, rules: List (Trigger, Id) }
-
-type alias Flux = Amount -> Amount -> Rate
-type alias Trigger = Amount -> Amount -> Bool
-
-type alias Id = Int
+import Dict
 
 interestRate = 0.03
 

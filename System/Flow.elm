@@ -7,19 +7,16 @@ import List as L
 import Dict as D
 import Maybe as M
 
-type Flow = Pipe (List Amount) Rate Id Id
+type alias StockLink a = { a | source:Id, sink:Id }
+type alias Flow = StockLink { rate:Float, pipeline:List Amount }
 type alias Id = Int
 type alias Amount = Float
 type alias Rate = Float
 
-initAll : StockRepo -> List (Rate, Id, Id) -> List Flow
-initAll = L.filterMap << init
-
-init : StockRepo -> (Rate, Id, Id) -> M.Maybe Flow
-init ss (rate, sourceId, sinkId) =
-  if | D.member sourceId ss && D.member sinkId ss -> M.Just (Pipe [] rate sourceId sinkId)
-     | otherwise -> M.Nothing
-
+new : StockLink {} -> Flow
+new link = 
+  let linkWithRate = { link | rate = 1 }
+  in  { linkWithRate | pipeline = [] }
 
 addFlow : Flow -> (List Flow, StockRepo) -> (List Flow, StockRepo)
 addFlow f (fs, ss) =
@@ -34,26 +31,23 @@ sourceFlowSink = sourceToFlow >> flowToSink
 
 sourceToFlow : (Flow, StockRepo) -> (Flow, StockRepo)
 sourceToFlow (f, ss) =
-  let (n, ss') = SS.stocksOut (rate f) (source f) ss
+  let (n, ss') = SS.stocksOut f.rate f.source ss
   in (flowIn n f, ss')
 
 flowToSink : (Flow, StockRepo) -> (Flow, StockRepo)
 flowToSink (f, ss) =
   let (n, f') = flowOut f
-  in (f', SS.stocksIn n (sink f) ss)
+  in (f', SS.stocksIn n f.sink ss)
 
 flowIn : Amount -> Flow -> Flow
-flowIn n (Pipe ns r i o) = Pipe (ns ++ [n]) r i o
+flowIn n flow = { flow | pipeline <- flow.pipeline ++ [n] }
 
 flowOut : Flow -> (Amount, Flow)
-flowOut (Pipe (n::ns) r i o) = (n, Pipe ns r i o)
+flowOut flow =
+  let
+    (a, newPipeline) = case flow.pipeline of
+      (x :: xs) -> (x, xs)
+      [] -> (0, [])
+  in (a, { flow | pipeline <- newPipeline })
 
-rate (Pipe _ r _ _) = r
-
-endpoints (Pipe _ _ i o) = (i,o)
-
-source (Pipe _ _ i _) = i
-
-sink (Pipe _ _ _ o) = o
-
-flowInfo (Pipe _ _ i o) = (i, o)
+flowInfo f = (f.source, f.sink)
