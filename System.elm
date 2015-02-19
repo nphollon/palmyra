@@ -1,5 +1,7 @@
 module System where
 
+import System.Stock (StockRepo)
+import System.Flow (Flow, FlowParams)
 import System.Stock as SS
 import System.Flow as SF
 
@@ -9,13 +11,13 @@ import List as L
 
 type alias System = {
     ply:Int,
-    stocks:SS.StockRepo,
-    flows:List SF.Flow
+    stocks:StockRepo,
+    flows:List Flow
   }
 
 type alias SystemParams = {
-  stocks:SS.StockRepo,
-  flows:List (SF.StockLink {})
+  stocks:StockRepo,
+  flows:List (FlowParams {})
 }
 
 type alias Id = Int
@@ -36,5 +38,23 @@ update plyLimit sys =
 
 evolve : System -> System
 evolve { ply, stocks, flows } =
-  let (newFlow, newStocks) = L.foldr SF.addFlow ([], stocks) flows
+  let (newFlow, newStocks) = L.foldr addFlow ([], stocks) flows
   in { ply=ply + 1, stocks=newStocks, flows=newFlow }
+
+addFlow : Flow -> (List Flow, StockRepo) -> (List Flow, StockRepo)
+addFlow f (fs, ss) =
+  let (f', ss') = sourceFlowSink (f, ss)
+  in (f'::fs, ss')
+
+sourceFlowSink : (Flow, StockRepo) -> (Flow, StockRepo)
+sourceFlowSink = sourceToFlow >> flowToSink
+
+sourceToFlow : (Flow, StockRepo) -> (Flow, StockRepo)
+sourceToFlow (f, ss) =
+  let (n, ss') = SS.stocksOut f.rate f.source ss
+  in (SF.flowIn n f, ss')
+
+flowToSink : (Flow, StockRepo) -> (Flow, StockRepo)
+flowToSink (f, ss) =
+  let (n, f') = SF.flowOut f
+  in (f', SS.stocksIn n f.sink ss)

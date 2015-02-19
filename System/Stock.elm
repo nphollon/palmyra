@@ -49,7 +49,7 @@ stockInfo s = (name s) ++ " : " ++ (value s)
 
 value s =
   case s of
-    Mass _ x -> "(" ++ toString x ++ ")"
+    Mass _ x -> toString x
     Ground n -> "∞"
 
 name s =

@@ -7,37 +7,21 @@ import List as L
 import Dict as D
 import Maybe as M
 
-type alias StockLink a = { a | source:Id, sink:Id }
-type alias Flow = StockLink { rate:Rate, pipeline:List Amount }
+type alias FlowParams a = { a | source:Id, sink:Id, state:Id, states:D.Dict Id State }
+type alias Flow = FlowParams { rate:Rate, pipeline:List Amount }
+type alias State = { flux : Amount -> Amount -> Rate , rules : List Rule }
+type alias Rule = (Amount -> Amount -> Bool, Id)
 type alias Id = Int
 type alias Amount = Float
 type alias Rate = Float
 
-new : StockLink {} -> Flow
+new : FlowParams {} -> Flow
 new link = 
   let linkWithRate = { link | rate = 1 }
   in  { linkWithRate | pipeline = [] }
 
-addFlow : Flow -> (List Flow, StockRepo) -> (List Flow, StockRepo)
-addFlow f (fs, ss) =
-  let (f', ss') = sourceFlowSink (f, ss)
-  in (f'::fs, ss')
-
 flowsInfo : List Flow -> List (Int, Int)
 flowsInfo = L.map flowInfo
-
-sourceFlowSink : (Flow, StockRepo) -> (Flow, StockRepo)
-sourceFlowSink = sourceToFlow >> flowToSink
-
-sourceToFlow : (Flow, StockRepo) -> (Flow, StockRepo)
-sourceToFlow (f, ss) =
-  let (n, ss') = SS.stocksOut f.rate f.source ss
-  in (flowIn n f, ss')
-
-flowToSink : (Flow, StockRepo) -> (Flow, StockRepo)
-flowToSink (f, ss) =
-  let (n, f') = flowOut f
-  in (f', SS.stocksIn n f.sink ss)
 
 flowIn : Amount -> Flow -> Flow
 flowIn n flow = { flow | pipeline <- flow.pipeline ++ [n] }
