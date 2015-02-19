@@ -11,8 +11,8 @@ pendulum : Float -> Element
 pendulum t =
   let
     pivot = (0, 100)
-    theta = (degrees 30) * cos (2 * pi * t)
-    bobXY = Geo.polar pivot 50 (theta - degrees 90)
+    theta = (degrees 5) * cos (2 * pi * t)
+    bobXY = Geo.polar pivot 200 (theta - degrees 90)
     thread = GC.traced (GC.solid C.black) (GC.segment pivot bobXY)
     bob = GC.filled C.red (GC.circle 15) |> GC.move bobXY
 

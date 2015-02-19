@@ -8,7 +8,7 @@ import Dict as D
 import Maybe as M
 
 type alias StockLink a = { a | source:Id, sink:Id }
-type alias Flow = StockLink { rate:Float, pipeline:List Amount }
+type alias Flow = StockLink { rate:Rate, pipeline:List Amount }
 type alias Id = Int
 type alias Amount = Float
 type alias Rate = Float

@@ -19,7 +19,6 @@ type alias SystemParams = {
 }
 
 type alias Id = Int
-type alias Rate = Float
 
 new : SystemParams -> System
 new sys = { ply = 0
@@ -27,10 +26,10 @@ new sys = { ply = 0
           , flows = L.map SF.new sys.flows
         }
 
-getInfo : System -> (List (Int, String), List (Int, Int))
+getInfo : System -> (List (Id, String), List (Id, Id))
 getInfo sys = (SS.stocksInfo sys.stocks, SF.flowsInfo sys.flows)
 
-update : Int -> System -> System
+update : Id -> System -> System
 update plyLimit sys =
   if | sys.ply < plyLimit -> evolve sys
      | otherwise -> sys
