@@ -18,6 +18,6 @@ startState = System.new bankAccount
 main = 
   let
     t = Timing.time timeDilation
-    display = Interface.display << System.getInfo
-    systemUpdate = foldp (System.update << Timing.discrete plyPerSecond)
+    display = System.getInfo >> Interface.display
+    systemUpdate = foldp (Timing.discrete plyPerSecond >> System.update)
   in display <~ systemUpdate startState t ~ t

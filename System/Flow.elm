@@ -21,7 +21,7 @@ new link =
   in  { linkWithRate | pipeline = [] }
 
 flowsInfo : List Flow -> List (Int, Int)
-flowsInfo = L.map flowInfo
+flowsInfo = L.map (\f -> (f.source, f.sink))
 
 flowIn : Amount -> Flow -> Flow
 flowIn n flow = { flow | pipeline <- flow.pipeline ++ [n] }
@@ -33,5 +33,3 @@ flowOut flow =
       (x :: xs) -> (x, xs)
       [] -> (0, [])
   in (a, { flow | pipeline <- newPipeline })
-
-flowInfo f = (f.source, f.sink)

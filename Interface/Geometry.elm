@@ -19,7 +19,7 @@ arc h head tail =
     arcLength = 2 * atan2 (0.5 * l) (sign * (r - h))
     angle i = headAngle - sign * i * arcLength / res
 
-    arcPoint = polar arcCenter (sign * r) << angle << toFloat
+    arcPoint = toFloat >> angle >> polar arcCenter (sign * r)
 
   in A.initialize res arcPoint |> A.toList
 

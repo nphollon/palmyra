@@ -14,27 +14,36 @@ repository stocks =
   let addToRepo s (i, dict) = (i + 1, D.insert i s dict)
   in L.foldr addToRepo (1, D.empty) stocks |> snd
 
-stocksIn : Amount -> Id -> StockRepo -> StockRepo
-stocksIn n id ss =
-  let s' = getStock id ss |> stockIn n
-  in setStock id s' ss
-
-stocksOut : Amount -> Id -> StockRepo -> (Amount, StockRepo)
-stocksOut n id ss =
-  let (n', s') = getStock id ss |> stockOut n
-  in (n', setStock id s' ss)
-
 stocksInfo : StockRepo -> List (Id, String)
 stocksInfo = D.map (always stockInfo) >> D.toList
 
-stockIn : Amount -> Stock -> Stock
-stockIn dx s = 
+stockInfo : Stock -> String
+stockInfo s = 
+  case s of 
+    Mass n x -> n ++ " : " ++ toString x
+    Ground n -> n ++ " : ∞"
+
+
+
+depositById : Amount -> Id -> StockRepo -> StockRepo
+depositById n id ss =
+  let s' = getStock id ss |> deposit n
+  in setStock id s' ss
+
+deposit : Amount -> Stock -> Stock
+deposit dx s = 
   case s of 
     Mass n x -> Mass n (x + dx)
     Ground n -> Ground n
 
-stockOut : Amount -> Stock -> (Amount, Stock)
-stockOut dx s =
+
+withdrawById : Amount -> Id -> StockRepo -> (Amount, StockRepo)
+withdrawById n id ss =
+  let (n', s') = getStock id ss |> withdraw n
+  in (n', setStock id s' ss)
+
+withdraw : Amount -> Stock -> (Amount, Stock)
+withdraw dx s =
   case s of
     Mass n x -> if x > dx then (dx, Mass n (x - dx)) else (x, Mass n 0)
     Ground n -> (dx, Ground n)
@@ -45,14 +54,12 @@ getStock id ss = D.get id ss |> M.withDefault (Ground "ground")
 setStock : Id -> Stock -> StockRepo -> StockRepo
 setStock = D.insert
 
-stockInfo s = (name s) ++ " : " ++ (value s)
 
+valueById : Id -> StockRepo -> Maybe Amount
+valueById id ss = getStock id ss |> value
+
+value : Stock -> Maybe Amount
 value s =
   case s of
-    Mass _ x -> toString x
-    Ground n -> "∞"
-
-name s =
-  case s of
-    Mass n _ -> n
-    Ground n -> n
+    Mass _ x -> Just x
+    Ground _ -> Nothing

@@ -25,10 +25,10 @@ drawStock (label, (nodePosition, infoboxPosition)) =
   let    
     info = T.plainText label |> GC.toForm
     box = GC.filled C.lightBlue (GC.rect 100 50)
+    infobox = GC.group [ box, info ] |> GC.move infoboxPosition
 
     node = GC.filled C.red (GC.circle 6) |> GC.move nodePosition
-    infobox = GC.group [ box, info ] |> GC.move infoboxPosition
-    link = GC.traced (GC.dotted C.black) <| GC.segment nodePosition infoboxPosition
+    link = GC.traced (GC.dotted C.black) (GC.segment nodePosition infoboxPosition)
   in GC.group [ link, node , infobox ]
 
 drawFlow : D.Dict comparable (a, (Point, Point)) -> (comparable, comparable) -> GC.Form
