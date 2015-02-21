@@ -1,3 +1,4 @@
 elm*
+!elm-package.json
 *.sublime-workspace
 *.scratch
