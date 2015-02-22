@@ -8,12 +8,13 @@ import Maybe
 import Signal ((<~), (~), foldp)
 
 import Data.CompoundInterest (bankAccount)
+import Data.Thermostat (thermostat)
 
 port speed : Maybe Float
 timeDilation = Maybe.withDefault 1.0 speed
 plyPerSecond = 10
 
-startState = System.new bankAccount
+startState = System.new thermostat
 
 main = 
   let

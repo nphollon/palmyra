@@ -43,18 +43,23 @@ evolve { ply, stocks, flows } =
 
 addFlow : Flow -> (List Flow, StockRepo) -> (List Flow, StockRepo)
 addFlow f (fs, ss) =
-  let (f', ss') = sourceFlowSink (f, ss)
+  let (f', ss') = sourceToFlow (f, ss) |> flowToSink |> transitionState
   in (f'::fs, ss')
 
-sourceFlowSink : (Flow, StockRepo) -> (Flow, StockRepo)
-sourceFlowSink = sourceToFlow >> flowToSink
+transitionState : (Flow, StockRepo) -> (Flow, StockRepo)
+transitionState (f, ss) =
+  let
+    sourceValue = SS.valueById f.source ss
+    sinkValue = SS.valueById f.sink ss
+    f' = SF.transitionState sourceValue sinkValue f
+  in (f', ss)
 
 sourceToFlow : (Flow, StockRepo) -> (Flow, StockRepo)
 sourceToFlow (f, ss) =
   let
     sourceValue = SS.valueById f.source ss
     sinkValue = SS.valueById f.sink ss
-    rate = SF.flux f sourceValue sinkValue
+    rate = SF.getRate sourceValue sinkValue f
     (n, ss') = SS.withdrawById rate f.source ss
   in (SF.flowIn n f, ss')
 

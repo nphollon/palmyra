@@ -1,37 +1,47 @@
-module Thermostat (thermostat) where
+module Data.Thermostat (thermostat) where
 
-opacity = Ply 1000
-outsideTemp = As 265
-targetTemp = As 290
-triggerTemp = As 287
-heat = AsPerPly 0.1
+import System (SystemParams)
+import System.Stock (Stock(..))
+import Dict
 
+opacity = 1000
+outsideTemp = 265
+targetTemp = 290
+triggerTemp = 287
+heat = 0.1
+
+thermostat : SystemParams
 thermostat = {
-    stocks = Dict.fromList [ (1, furnace), (2, room), (3, ground) ],
+    stocks = Dict.fromList [ (1, Ground "Furnace"), (2, Mass "Room" 275), (3, Ground "Outside") ],
     flows = [ heatRoom, coolRoom ]
   }
 
-furnace = { name="Furnace", value=Ground }
-room = { name="Room", value=Mass 275 }
-ground = { name="Outside", value=Ground }
-
-heatRoom = { source=1, sink=2, state=0, states=heatStates }
+heatRoom = { source=1, sink=2, stateId=0, states=heatStates }
 heatStates = Dict.fromList [ (0, heatOn), (1, heatOff) ]
 
 heatOn =
   let
     flux _ _ = heat
-    warmEnough _ roomTemp = roomTemp > targetTemp
-  in { flux = flux, rules = [(warmEnough, 1)] }
+    warmEnough _ o =
+      case o of
+        Just roomTemp -> roomTemp > targetTemp
+        Nothing -> False
+  in { flux = flux, rules = [ { trigger=warmEnough, newStateId=1 } ] }
 
 heatOff =
   let
-    flux _ _ = AsPerPly 0
-    tooCold _ roomTemp = roomTemp < triggerTemp
-  in { flux = flux, rules = [(tooCold, 0)] }
+    flux _ _ = 0
+    tooCold _ o =
+      case o of
+        Just roomTemp -> roomTemp < triggerTemp
+        Nothing -> False
+  in { flux = flux, rules = [ { trigger=tooCold, newStateId=0 } ] }
 
-coolRoom = { source=2, sink=3, state=0, states=coolStates }
+coolRoom = { source=2, sink=3, stateId=0, states=coolStates }
 coolStates = Dict.singleton 0 cooling
 cooling =
-  let flux roomTemp _ = (roomTemp - outsideTemp) / opacity
+  let flux i _ =
+    case i of
+      Just roomTemp -> (roomTemp - outsideTemp) / opacity
+      Nothing -> 0
   in { flux = flux, rules = [] }

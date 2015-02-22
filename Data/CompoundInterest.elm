@@ -11,7 +11,7 @@ bankAccount = {
   }
 
 interestFlow = {
-    source = 2, sink = 1, state = 0, states = Dict.singleton 0 accruingInterest
+    source = 2, sink = 1, stateId = 0, states = Dict.singleton 0 accruingInterest
   }
 
 accruingInterest = 
