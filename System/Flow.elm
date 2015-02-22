@@ -9,8 +9,8 @@ import Maybe as M
 
 type alias FlowParams a = { a | source:Id, sink:Id, state:Id, states:D.Dict Id State }
 type alias Flow = FlowParams { rate:Rate, pipeline:List Amount }
-type alias State = { flux : Amount -> Amount -> Rate , rules : List Rule }
-type alias Rule = (Amount -> Amount -> Bool, Id)
+type alias State = { flux : Maybe Amount -> Maybe Amount -> Rate , rules : List Rule }
+type alias Rule = (Maybe Amount -> Maybe Amount -> Bool, Id)
 type alias Id = Int
 type alias Amount = Float
 type alias Rate = Float
@@ -33,3 +33,10 @@ flowOut flow =
       (x :: xs) -> (x, xs)
       [] -> (0, [])
   in (a, { flow | pipeline <- newPipeline })
+
+flux : Flow -> Maybe Amount -> Maybe Amount -> Rate
+flux f i o =
+  let maybeState = D.get f.state f.states
+  in case maybeState of
+    Nothing -> 0
+    Just {flux, rules} -> flux i o

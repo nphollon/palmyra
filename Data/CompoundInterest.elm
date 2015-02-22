@@ -3,7 +3,7 @@ module Data.CompoundInterest (bankAccount) where
 import System.Stock (Stock(..))
 import Dict
 
-interestRate = 0.03
+interestRate = 0.0003
 
 bankAccount = {
     stocks = Dict.fromList [(1, Mass "Account" 100), (2, Ground "Interest")],
@@ -15,5 +15,8 @@ interestFlow = {
   }
 
 accruingInterest = 
-  let flux _ principal = interestRate * principal
+  let flux _ sink =
+    case sink of
+      Nothing -> 0
+      Just principal -> interestRate * principal
   in { flux=flux, rules=[] }

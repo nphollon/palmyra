@@ -52,7 +52,9 @@ sourceFlowSink = sourceToFlow >> flowToSink
 sourceToFlow : (Flow, StockRepo) -> (Flow, StockRepo)
 sourceToFlow (f, ss) =
   let
-    rate = 0.01
+    sourceValue = SS.valueById f.source ss
+    sinkValue = SS.valueById f.sink ss
+    rate = SF.flux f sourceValue sinkValue
     (n, ss') = SS.withdrawById rate f.source ss
   in (SF.flowIn n f, ss')
 
