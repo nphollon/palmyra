@@ -18,10 +18,10 @@ type alias Rate = Float
 new : FlowParams {} -> Flow
 new link = 
   let linkWithRate = { link | rate = 1 }
-  in  { linkWithRate | pipeline = [] }
+  in  { linkWithRate | pipeline = [ 0 ] }
 
-flowsInfo : List Flow -> List (Int, Int)
-flowsInfo = L.map (\f -> (f.source, f.sink))
+flowsInfo : List Flow -> List ((Id, Id), List Amount)
+flowsInfo = L.map (\f -> ((f.source, f.sink), f.pipeline))
 
 flowIn : Amount -> Flow -> Flow
 flowIn n flow = { flow | pipeline <- flow.pipeline ++ [n] }

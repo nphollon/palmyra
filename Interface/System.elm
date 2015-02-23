@@ -12,7 +12,7 @@ import Text as T
 
 type alias Point = (Float, Float)
 
-draw : List (Int, String) -> List (Int, Int) -> Element
+draw : List (Int, String) -> List ((Int, Int), List Float) -> Element
 draw stocks flows =
   let
     pos = A.fromList stocks |> addPositions
@@ -31,14 +31,16 @@ drawStock (label, (nodePosition, infoboxPosition)) =
     link = GC.traced (GC.dotted C.black) (GC.segment nodePosition infoboxPosition)
   in GC.group [ link, node , infobox ]
 
-drawFlow : D.Dict comparable (a, (Point, Point)) -> (comparable, comparable) -> GC.Form
-drawFlow pos flow =
+drawFlow : D.Dict comparable (a, (Point, Point)) -> ((comparable, comparable), List Float) -> GC.Form
+drawFlow pos (flow, pipeline) =
   let
     tail = D.get (fst flow) pos
     head = D.get (snd flow) pos
-  in case (tail, head) of
-    (Just (_,(t,_)), Just (_,(h,_))) -> arc t h
-    otherwise -> GC.group []
+  in if | L.isEmpty pipeline -> blank
+        | L.head pipeline == 0 -> blank
+        | otherwise -> case (tail, head) of
+          (Just (_,(t,_)), Just (_,(h,_))) -> arc t h
+          otherwise -> blank
 
 arc : Point -> Point -> GC.Form
 arc t h = 
@@ -74,3 +76,6 @@ keyPositions n i =
 
 polar : Float -> Float -> Point
 polar r theta = Geo.polar (0,0) r (theta + degrees 90)
+
+blank : GC.Form
+blank = GC.group []

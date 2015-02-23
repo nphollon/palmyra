@@ -28,7 +28,7 @@ new sys = { ply = 0
           , flows = L.map SF.new sys.flows
         }
 
-getInfo : System -> (List (Id, String), List (Id, Id))
+getInfo : System -> (List (Id, String), List ((Id, Id), List SF.Amount))
 getInfo sys = (SS.stocksInfo sys.stocks, SF.flowsInfo sys.flows)
 
 update : Id -> System -> System
