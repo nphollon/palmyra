@@ -8,15 +8,8 @@ import String as S
 
 type alias StockRepo = D.Dict Id Stock
 type Stock = Ground String | Mass String Amount
-type alias Id = Int
+type alias Id = String
 type alias Amount = Float
-
-
-repository : List Stock -> StockRepo
-repository stocks = 
-  let addToRepo s (i, dict) = (i + 1, D.insert i s dict)
-  in L.foldr addToRepo (1, D.empty) stocks |> snd
-
 
 stocksInfo : StockRepo -> List (Id, String)
 stocksInfo = D.map (always stockInfo) >> D.toList

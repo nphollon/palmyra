@@ -12,7 +12,7 @@ import Text as T
 
 type alias Point = (Float, Float)
 
-draw : List (Int, String) -> List ((Int, Int), List Float) -> Element
+draw : List (comparable, String) -> List ((comparable, comparable), List Float) -> Element
 draw stocks flows =
   let
     pos = A.fromList stocks |> addPositions

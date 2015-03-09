@@ -11,7 +11,7 @@ type alias FlowParams a = { a | source:Id, sink:Id, stateId:Id, states:D.Dict Id
 type alias Flow = FlowParams { rate:Rate, pipeline:List Amount }
 type alias State = { flux : Maybe Amount -> Maybe Amount -> Rate , rules : List Rule }
 type alias Rule = { trigger: Maybe Amount -> Maybe Amount -> Bool, newStateId: Id }
-type alias Id = Int
+type alias Id = SS.Id
 type alias Amount = Float
 type alias Rate = Float
 

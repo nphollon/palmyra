@@ -20,7 +20,7 @@ type alias SystemParams = {
   flows:List (FlowParams {})
 }
 
-type alias Id = Int
+type alias Id = SS.Id
 
 new : SystemParams -> System
 new sys = { ply = 0
@@ -31,7 +31,7 @@ new sys = { ply = 0
 getInfo : System -> (List (Id, String), List ((Id, Id), List SF.Amount))
 getInfo sys = (SS.stocksInfo sys.stocks, SF.flowsInfo sys.flows)
 
-update : Id -> System -> System
+update : Int -> System -> System
 update plyLimit sys =
   if | sys.ply < plyLimit -> evolve sys
      | otherwise -> sys

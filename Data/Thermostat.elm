@@ -12,12 +12,12 @@ heat = 0.1
 
 thermostat : SystemParams
 thermostat = {
-    stocks = Dict.fromList [ (1, Ground "Furnace"), (2, Mass "Room" 285), (3, Ground "Outside") ],
+    stocks = Dict.fromList [ ("Furnace", Ground "Furnace"), ("Room", Mass "Room" 285), ("Outside", Ground "Outside") ],
     flows = [ heatRoom, coolRoom ]
   }
 
-heatRoom = { source=1, sink=2, stateId=0, states=heatStates }
-heatStates = Dict.fromList [ (0, heatOn), (1, heatOff) ]
+heatRoom = { source="Furnace", sink="Room", stateId="0", states=heatStates }
+heatStates = Dict.fromList [ ("0", heatOn), ("1", heatOff) ]
 
 heatOn =
   let
@@ -26,7 +26,7 @@ heatOn =
       case o of
         Just roomTemp -> roomTemp > targetTemp
         Nothing -> False
-  in { flux = flux, rules = [ { trigger=warmEnough, newStateId=1 } ] }
+  in { flux = flux, rules = [ { trigger=warmEnough, newStateId="1" } ] }
 
 heatOff =
   let
@@ -35,10 +35,10 @@ heatOff =
       case o of
         Just roomTemp -> roomTemp < triggerTemp
         Nothing -> False
-  in { flux = flux, rules = [ { trigger=tooCold, newStateId=0 } ] }
+  in { flux = flux, rules = [ { trigger=tooCold, newStateId="0" } ] }
 
-coolRoom = { source=2, sink=3, stateId=0, states=coolStates }
-coolStates = Dict.singleton 0 cooling
+coolRoom = { source="Room", sink="Outside", stateId="0", states=coolStates }
+coolStates = Dict.singleton "0" cooling
 cooling =
   let flux i _ =
     case i of

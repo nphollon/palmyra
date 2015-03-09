@@ -6,7 +6,7 @@ import Interface.Clock as Clock
 import Graphics.Collage as GC
 import Graphics.Element as GE
 
-display : (List (Int, String), List ((Int, Int), List Float)) -> Float -> GE.Element
+display : (List (comparable, String), List ((comparable, comparable), List Float)) -> Float -> GE.Element
 display (stocks, flows) time =
   let
     clock = Clock.pendulum time
