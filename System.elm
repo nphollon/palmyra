@@ -1,7 +1,7 @@
 module System where
 
 import System.Stock (StockRepo)
-import System.Flow (Flow, FlowParams)
+import System.Flow (Flow)
 import System.Stock as SS
 import System.Flow as SF
 
@@ -15,18 +15,15 @@ type alias System = {
     flows:List Flow
   }
 
-type alias SystemParams = {
-  stocks:StockRepo,
-  flows:List (FlowParams {})
-}
+type alias SystemParams = { 
+    stocks:StockRepo,
+    flows:List Flow
+  }
 
 type alias Id = SS.Id
 
 new : SystemParams -> System
-new sys = { ply = 0
-          , stocks = sys.stocks
-          , flows = L.map SF.new sys.flows
-        }
+new sys = { sys | ply = 0 }
 
 getInfo : System -> (List (Id, String), List (Id, Id))
 getInfo sys = (SS.stocksInfo sys.stocks, SF.flowsInfo sys.flows)
@@ -47,19 +44,34 @@ addFlow f (fs, ss) =
   in (f'::fs, ss')
 
 transitionState : (Flow, StockRepo) -> (Flow, StockRepo)
-transitionState (f, ss) =
-  let
-    sourceValue = SS.valueById f.source ss
-    sinkValue = SS.valueById f.sink ss
-    f' = SF.transitionState sourceValue sinkValue f
-  in (f', ss)
+transitionState (flow, ss) =
+  case flow of
+    SF.Deprecate f ->
+      let
+        sourceValue = SS.valueById f.source ss
+        sinkValue = SS.valueById f.sink ss
+        f' = SF.transitionState sourceValue sinkValue flow
+      in (f', ss)
+    otherwise -> (flow, ss)
 
 sourceToSink : (Flow, StockRepo) -> (Flow, StockRepo)
-sourceToSink (f, ss) =
-  let
-    sourceValue = SS.valueById f.source ss
-    sinkValue = SS.valueById f.sink ss
-    rate = SF.getRate sourceValue sinkValue f
-    (n, ss') = SS.withdrawById rate f.source ss
-    ss'' = SS.depositById n f.sink ss'
-  in (f, ss'')
+sourceToSink (flow, ss) =
+  case flow of
+    SF.Deprecate f ->
+      let
+        sourceValue = SS.valueById f.source ss
+        sinkValue = SS.valueById f.sink ss
+        rate = SF.getRate sourceValue sinkValue flow
+        (n, ss') = SS.withdrawById rate f.source ss
+        ss'' = SS.depositById n f.sink ss'
+      in (flow, ss'')
+    SF.Growth id r ->
+      let sinkValue = SS.valueById id ss
+      in case sinkValue of
+        Just v -> (flow, SS.depositById (r * v) id ss)
+        Nothing -> (flow, ss)
+    SF.Decay id r v0 ->
+      let sourceValue = SS.valueById id ss
+      in case sourceValue of
+        Just v -> (flow, SS.withdrawById (r * (v - v0)) id ss |> snd)
+        Nothing -> (flow, ss)
