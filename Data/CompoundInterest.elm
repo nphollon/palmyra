@@ -6,12 +6,12 @@ import Dict
 interestRate = 0.0003
 
 bankAccount = {
-    stocks = Dict.fromList [("Account", Mass "Account" 100), ("Interest", Ground "Interest")],
+    stocks = Dict.fromList [("Account", Mass 100), ("Interest", Ground)],
     flows = [ interestFlow ]
   }
 
 interestFlow = {
-    source = 2, sink = 1, stateId = 0, states = Dict.singleton 0 accruingInterest
+    source = "Interest", sink = "Account", stateId = "0", states = Dict.singleton "0" accruingInterest
   }
 
 accruingInterest = 

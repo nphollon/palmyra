@@ -28,7 +28,7 @@ new sys = { ply = 0
           , flows = L.map SF.new sys.flows
         }
 
-getInfo : System -> (List (Id, String), List ((Id, Id), List SF.Amount))
+getInfo : System -> (List (Id, String), List (Id, Id))
 getInfo sys = (SS.stocksInfo sys.stocks, SF.flowsInfo sys.flows)
 
 update : Int -> System -> System
@@ -43,7 +43,7 @@ evolve { ply, stocks, flows } =
 
 addFlow : Flow -> (List Flow, StockRepo) -> (List Flow, StockRepo)
 addFlow f (fs, ss) =
-  let (f', ss') = sourceToFlow (f, ss) |> flowToSink |> transitionState
+  let (f', ss') = sourceToSink (f, ss) |> transitionState
   in (f'::fs, ss')
 
 transitionState : (Flow, StockRepo) -> (Flow, StockRepo)
@@ -54,16 +54,12 @@ transitionState (f, ss) =
     f' = SF.transitionState sourceValue sinkValue f
   in (f', ss)
 
-sourceToFlow : (Flow, StockRepo) -> (Flow, StockRepo)
-sourceToFlow (f, ss) =
+sourceToSink : (Flow, StockRepo) -> (Flow, StockRepo)
+sourceToSink (f, ss) =
   let
     sourceValue = SS.valueById f.source ss
     sinkValue = SS.valueById f.sink ss
     rate = SF.getRate sourceValue sinkValue f
     (n, ss') = SS.withdrawById rate f.source ss
-  in (SF.flowIn n f, ss')
-
-flowToSink : (Flow, StockRepo) -> (Flow, StockRepo)
-flowToSink (f, ss) =
-  let (n, f') = SF.flowOut f
-  in (f', SS.depositById n f.sink ss)
+    ss'' = SS.depositById n f.sink ss'
+  in (f, ss'')

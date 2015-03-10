@@ -12,7 +12,7 @@ import Text as T
 
 type alias Point = (Float, Float)
 
-draw : List (comparable, String) -> List ((comparable, comparable), List Float) -> Element
+draw : List (comparable, String) -> List (comparable, comparable) -> Element
 draw stocks flows =
   let
     pos = A.fromList stocks |> addPositions
@@ -31,16 +31,14 @@ drawStock (label, (nodePosition, infoboxPosition)) =
     link = GC.traced (GC.dotted C.black) (GC.segment nodePosition infoboxPosition)
   in GC.group [ link, node , infobox ]
 
-drawFlow : D.Dict comparable (a, (Point, Point)) -> ((comparable, comparable), List Float) -> GC.Form
-drawFlow pos (flow, pipeline) =
+drawFlow : D.Dict comparable (a, (Point, Point)) -> (comparable, comparable) -> GC.Form
+drawFlow pos flow =
   let
     tail = D.get (fst flow) pos
     head = D.get (snd flow) pos
-  in if | L.isEmpty pipeline -> blank
-        | L.head pipeline == 0 -> blank
-        | otherwise -> case (tail, head) of
-          (Just (_,(t,_)), Just (_,(h,_))) -> arc t h
-          otherwise -> blank
+  in case (tail, head) of
+    (Just (_,(t,_)), Just (_,(h,_))) -> arc t h
+    otherwise -> blank
 
 arc : Point -> Point -> GC.Form
 arc t h = 

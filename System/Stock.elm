@@ -7,18 +7,17 @@ import String as S
 
 
 type alias StockRepo = D.Dict Id Stock
-type Stock = Ground String | Mass String Amount
+type Stock = Ground | Mass Amount
 type alias Id = String
 type alias Amount = Float
 
 stocksInfo : StockRepo -> List (Id, String)
-stocksInfo = D.map (always stockInfo) >> D.toList
-
-stockInfo : Stock -> String
-stockInfo s = 
-  case s of 
-    Mass n x -> n ++ " : " ++ format x
-    Ground n -> n ++ " : ∞"
+stocksInfo = 
+  let
+    stockInfo s = case s of 
+      Mass x -> format x
+      Ground -> "∞"
+  in D.map (\k v -> k ++ " : " ++ stockInfo v) >> D.toList
 
 format : Amount -> String
 format x =
@@ -37,8 +36,8 @@ depositById n id ss =
 deposit : Amount -> Stock -> Stock
 deposit dx s = 
   case s of 
-    Mass n x -> Mass n (x + dx)
-    Ground n -> Ground n
+    Mass x -> Mass (x + dx)
+    Ground -> Ground
 
 
 withdrawById : Amount -> Id -> StockRepo -> (Amount, StockRepo)
@@ -49,12 +48,12 @@ withdrawById n id ss =
 withdraw : Amount -> Stock -> (Amount, Stock)
 withdraw dx s =
   case s of
-    Mass n x -> if x > dx then (dx, Mass n (x - dx)) else (x, Mass n 0)
-    Ground n -> (dx, Ground n)
+    Mass x -> if x > dx then (dx, Mass (x - dx)) else (x, Mass 0)
+    Ground -> (dx, Ground)
 
 
 getStock : Id -> StockRepo -> Stock
-getStock id ss = D.get id ss |> M.withDefault (Ground "ground")
+getStock id ss = D.get id ss |> M.withDefault Ground
 
 setStock : Id -> Stock -> StockRepo -> StockRepo
 setStock = D.insert
@@ -66,5 +65,5 @@ valueById id ss = getStock id ss |> value
 value : Stock -> Maybe Amount
 value s =
   case s of
-    Mass _ x -> Just x
-    Ground _ -> Nothing
+    Mass x -> Just x
+    Ground -> Nothing
