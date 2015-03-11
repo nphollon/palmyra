@@ -8,16 +8,25 @@ import System.Flow as SF
 import Array as A
 import Dict as D
 import List as L
+import Maybe as M
 
 type alias System = {
     ply : Int,
     stocks : D.Dict Id Stock,
-    flows: D.Dict Id Flow
+    flows : D.Dict Id Flow,
+    rules : D.Dict Id Rule
   }
 
 type alias SystemParams = { 
     stocks : D.Dict Id Stock,
-    flows : D.Dict Id Flow
+    flows : D.Dict Id Flow,
+    rules : D.Dict Id Rule
+  }
+
+type alias Rule = {
+    target : Id,
+    dependsOn : Id,
+    rule : Float -> Maybe Float
   }
 
 new : SystemParams -> System
@@ -32,23 +41,24 @@ update plyLimit sys =
      | otherwise -> sys
 
 evolve : System -> System
-evolve { ply, stocks, flows } =
-  let newStocks = D.foldr (always sourceToSink) stocks flows
+evolve { ply, stocks, flows, rules } =
+  let
+    newFlows = D.foldr (always <| applyRule stocks) flows rules
+    newStocks = D.foldr (always sourceToSink) stocks newFlows
   in {
     ply = ply + 1,
     stocks = newStocks,
-    flows = D.map (always <| transitionState newStocks) flows
+    flows = newFlows,
+    rules = rules
   }
 
-transitionState : D.Dict Id Stock -> Flow -> Flow
-transitionState ss flow =
-  case flow of
-    SF.Deprecate f ->
-      let
-        sourceValue = SS.valueById f.source ss
-        sinkValue = SS.valueById f.sink ss
-      in SF.transitionState sourceValue sinkValue flow
-    otherwise -> flow
+applyRule : D.Dict Id Stock -> Rule -> D.Dict Id Flow -> D.Dict Id Flow
+applyRule stocks rule flows =
+  case D.get rule.dependsOn stocks of
+    Nothing -> flows
+    Just x -> case (rule.rule <| SS.value2 x) of
+      Nothing -> flows
+      Just newX -> D.update rule.target (SF.setRate newX |> M.map) flows
 
 sourceToSink : Flow -> D.Dict Id Stock -> D.Dict Id Stock
 sourceToSink flow ss =

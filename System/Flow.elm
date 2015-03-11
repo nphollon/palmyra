@@ -26,13 +26,16 @@ print flow = case flow of
 getRate : Maybe Amount -> Maybe Amount -> Flow -> Rate
 getRate i o flow =
   case flow of
-    Deprecate f ->
-      let maybeState = D.get f.stateId f.states
-      in case maybeState of
-        Nothing -> 0
-        Just {flux, rules} -> flux i o
+    Deprecate f -> f.rate
     Growth _ r -> r
     Decay _ r _ -> r
+
+setRate : Float -> Flow -> Flow
+setRate r flow =
+  case flow of
+    Deprecate f -> Deprecate { f | rate <- r }
+    Growth a _ -> Growth a r
+    Decay a _ b -> Decay a r b
 
 transitionState : Maybe Amount -> Maybe Amount -> Flow -> Flow
 transitionState i o flow =

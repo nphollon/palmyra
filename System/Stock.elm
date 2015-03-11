@@ -67,3 +67,9 @@ value s =
   case s of
     Mass x -> Just x
     Ground -> Nothing
+
+value2 : Stock -> Float
+value2 s =
+  case s of
+    Mass x -> x
+    Ground -> 0
