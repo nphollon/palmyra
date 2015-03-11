@@ -11,7 +11,7 @@ heat = 0.1
 
 thermostat : SystemParams
 thermostat = {
-    stocks = Dict.fromList [ ("Furnace", Ground), ("Room", Mass 285),
+    stocks = Dict.fromList [ ("Furnace", Ground), ("Room", Mass 285) ],
     flows = [ heatRoom, Decay "Room" 0.001 265 ]
   }
 

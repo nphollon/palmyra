@@ -22,6 +22,7 @@ type alias SystemParams = {
 
 type alias Id = SS.Id
 
+
 new : SystemParams -> System
 new sys = { sys | ply = 0 }
 
@@ -35,27 +36,25 @@ update plyLimit sys =
 
 evolve : System -> System
 evolve { ply, stocks, flows } =
-  let (newFlow, newStocks) = L.foldr addFlow ([], stocks) flows
-  in { ply=ply + 1, stocks=newStocks, flows=newFlow }
+  let newStocks = L.foldr sourceToSink stocks flows
+  in {
+    ply = ply + 1,
+    stocks = newStocks,
+    flows = L.map (transitionState newStocks) flows
+  }
 
-addFlow : Flow -> (List Flow, StockRepo) -> (List Flow, StockRepo)
-addFlow f (fs, ss) =
-  let (f', ss') = sourceToSink (f, ss) |> transitionState
-  in (f'::fs, ss')
-
-transitionState : (Flow, StockRepo) -> (Flow, StockRepo)
-transitionState (flow, ss) =
+transitionState : StockRepo -> Flow -> Flow
+transitionState ss flow =
   case flow of
     SF.Deprecate f ->
       let
         sourceValue = SS.valueById f.source ss
         sinkValue = SS.valueById f.sink ss
-        f' = SF.transitionState sourceValue sinkValue flow
-      in (f', ss)
-    otherwise -> (flow, ss)
+      in SF.transitionState sourceValue sinkValue flow
+    otherwise -> flow
 
-sourceToSink : (Flow, StockRepo) -> (Flow, StockRepo)
-sourceToSink (flow, ss) =
+sourceToSink : Flow -> StockRepo -> StockRepo
+sourceToSink flow ss =
   case flow of
     SF.Deprecate f ->
       let
@@ -64,14 +63,14 @@ sourceToSink (flow, ss) =
         rate = SF.getRate sourceValue sinkValue flow
         (n, ss') = SS.withdrawById rate f.source ss
         ss'' = SS.depositById n f.sink ss'
-      in (flow, ss'')
+      in ss''
     SF.Growth id r ->
       let sinkValue = SS.valueById id ss
       in case sinkValue of
-        Just v -> (flow, SS.depositById (r * v) id ss)
-        Nothing -> (flow, ss)
+        Just v -> SS.depositById (r * v) id ss
+        Nothing -> ss
     SF.Decay id r v0 ->
       let sourceValue = SS.valueById id ss
       in case sourceValue of
-        Just v -> (flow, SS.withdrawById (r * (v - v0)) id ss |> snd)
-        Nothing -> (flow, ss)
+        Just v -> SS.withdrawById (r * (v - v0)) id ss |> snd
+        Nothing -> ss
