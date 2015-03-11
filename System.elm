@@ -63,14 +63,6 @@ applyRule stocks rule flows =
 sourceToSink : Flow -> D.Dict Id Stock -> D.Dict Id Stock
 sourceToSink flow ss =
   case flow of
-    SF.Deprecate f ->
-      let
-        sourceValue = SS.valueById f.source ss
-        sinkValue = SS.valueById f.sink ss
-        rate = SF.getRate sourceValue sinkValue flow
-        (n, ss') = SS.withdrawById rate f.source ss
-        ss'' = SS.depositById n f.sink ss'
-      in ss''
     SF.Growth id r ->
       let sinkValue = SS.valueById id ss
       in case sinkValue of
