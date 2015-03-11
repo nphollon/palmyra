@@ -1,6 +1,6 @@
 module System where
 
-import System.Stock (StockRepo)
+import System.Stock (Stock, Id)
 import System.Flow (Flow)
 import System.Stock as SS
 import System.Flow as SF
@@ -10,18 +10,15 @@ import Dict as D
 import List as L
 
 type alias System = {
-    ply:Int,
-    stocks:StockRepo,
-    flows:List Flow
+    ply : Int,
+    stocks : D.Dict Id Stock,
+    flows: D.Dict Id Flow
   }
 
 type alias SystemParams = { 
-    stocks:StockRepo,
-    flows:List Flow
+    stocks : D.Dict Id Stock,
+    flows : D.Dict Id Flow
   }
-
-type alias Id = SS.Id
-
 
 new : SystemParams -> System
 new sys = { sys | ply = 0 }
@@ -36,14 +33,14 @@ update plyLimit sys =
 
 evolve : System -> System
 evolve { ply, stocks, flows } =
-  let newStocks = L.foldr sourceToSink stocks flows
+  let newStocks = D.foldr (always sourceToSink) stocks flows
   in {
     ply = ply + 1,
     stocks = newStocks,
-    flows = L.map (transitionState newStocks) flows
+    flows = D.map (always <| transitionState newStocks) flows
   }
 
-transitionState : StockRepo -> Flow -> Flow
+transitionState : D.Dict Id Stock -> Flow -> Flow
 transitionState ss flow =
   case flow of
     SF.Deprecate f ->
@@ -53,7 +50,7 @@ transitionState ss flow =
       in SF.transitionState sourceValue sinkValue flow
     otherwise -> flow
 
-sourceToSink : Flow -> StockRepo -> StockRepo
+sourceToSink : Flow -> D.Dict Id Stock -> D.Dict Id Stock
 sourceToSink flow ss =
   case flow of
     SF.Deprecate f ->

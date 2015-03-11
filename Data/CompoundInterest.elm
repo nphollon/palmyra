@@ -7,5 +7,5 @@ import Dict
 
 bankAccount = {
     stocks = Dict.fromList [("Account", Mass 100)],
-    flows = [ Growth "Account" 0.0003 ]
+    flows = Dict.fromList [("Interest", Growth "Account" 0.0003)]
   }

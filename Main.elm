@@ -27,5 +27,5 @@ main =
 merge : System.SystemParams -> System.SystemParams -> System.SystemParams
 merge s1 s2 = {
     stocks = Dict.union s1.stocks s2.stocks,
-    flows = s1.flows ++ s2.flows
+    flows = Dict.union s1.flows s2.flows
   }

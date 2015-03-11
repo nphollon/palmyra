@@ -12,12 +12,11 @@ type Flow = Deprecate { source:Id, sink:Id, rate:Rate, stateId:Id, states:D.Dict
   | Decay Id Float Float
 type alias State = { flux : Maybe Amount -> Maybe Amount -> Rate , rules : List Rule }
 type alias Rule = { trigger: Maybe Amount -> Maybe Amount -> Bool, newStateId: Id }
-type alias Id = SS.Id
 type alias Amount = Float
 type alias Rate = Float
 
-flowsInfo : List Flow -> List (Id, Id)
-flowsInfo = L.map print
+flowsInfo : D.Dict Id Flow -> List (Id, Id)
+flowsInfo = D.values >> L.map print
 
 print : Flow -> (Id, Id)
 print flow = case flow of
