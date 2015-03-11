@@ -1,6 +1,6 @@
 module System where
 
-import System.Stock (Stock, Id)
+import System.Stock (Id)
 import System.Flow (Flow)
 import System.Stock as SS
 import System.Flow as SF
@@ -12,13 +12,13 @@ import Maybe as M
 
 type alias System = {
     ply : Int,
-    stocks : D.Dict Id Stock,
+    stocks : D.Dict Id Float,
     flows : D.Dict Id Flow,
     rules : D.Dict Id Rule
   }
 
 type alias SystemParams = { 
-    stocks : D.Dict Id Stock,
+    stocks : D.Dict Id Float,
     flows : D.Dict Id Flow,
     rules : D.Dict Id Rule
   }
@@ -52,25 +52,23 @@ evolve { ply, stocks, flows, rules } =
     rules = rules
   }
 
-applyRule : D.Dict Id Stock -> Rule -> D.Dict Id Flow -> D.Dict Id Flow
+applyRule : D.Dict Id Float -> Rule -> D.Dict Id Flow -> D.Dict Id Flow
 applyRule stocks rule flows =
   case D.get rule.dependsOn stocks of
     Nothing -> flows
-    Just x -> case (rule.rule <| SS.value2 x) of
+    Just x -> case (rule.rule x) of
       Nothing -> flows
       Just newX -> D.update rule.target (SF.setRate newX |> M.map) flows
 
-sourceToSink : Flow -> D.Dict Id Stock -> D.Dict Id Stock
+sourceToSink : Flow -> D.Dict Id Float -> D.Dict Id Float
 sourceToSink flow ss =
   case flow of
     SF.Growth id r ->
-      let sinkValue = SS.valueById id ss
-      in case sinkValue of
+      case D.get id ss of
         Just v -> SS.depositById (r * v) id ss
         Nothing -> ss
     SF.Decay id r v0 ->
-      let sourceValue = SS.valueById id ss
-      in case sourceValue of
+      case D.get id ss of
         Just v -> SS.withdrawById (r * (v - v0)) id ss |> snd
         Nothing -> ss
     SF.Constant id r -> SS.depositById r id ss

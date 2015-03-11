@@ -5,21 +5,13 @@ import Dict as D
 import Maybe as M
 import String as S
 
-
-type alias StockRepo = D.Dict Id Stock
-type Stock = Ground | Mass Amount
+type alias StockRepo = D.Dict Id Float
 type alias Id = String
-type alias Amount = Float
 
 stocksInfo : StockRepo -> List (Id, String)
-stocksInfo = 
-  let
-    stockInfo s = case s of 
-      Mass x -> format x
-      Ground -> "∞"
-  in D.map (\k v -> k ++ " : " ++ stockInfo v) >> D.toList
+stocksInfo = D.map (\k v -> k ++ " : " ++ format v) >> D.toList
 
-format : Amount -> String
+format : Float -> String
 format x =
   let
     totalCents = round (x * 100)
@@ -27,49 +19,22 @@ format x =
     cents = totalCents `rem` 100 |> abs |> toString |> S.pad 2 '0'
   in dollars ++ "." ++ cents
 
+depositById : Float -> Id -> StockRepo -> StockRepo
+depositById dx id ss =
+  case (D.get id ss) of
+    Nothing -> ss
+    Just x -> D.insert id (max 0 (dx + x)) ss
 
-depositById : Amount -> Id -> StockRepo -> StockRepo
-depositById n id ss =
-  let s' = getStock id ss |> deposit n
-  in setStock id s' ss
+withdrawById : Float -> Id -> StockRepo -> (Float, StockRepo)
+withdrawById dx id ss =
+  case (D.get id ss) of
+    Nothing -> (0, ss)
+    Just x ->
+      let (dx', x') = withdraw dx x
+      in (dx', D.insert id x' ss)
 
-deposit : Amount -> Stock -> Stock
-deposit dx s = 
-  case s of 
-    Mass x -> Mass (x + dx)
-    Ground -> Ground
-
-
-withdrawById : Amount -> Id -> StockRepo -> (Amount, StockRepo)
-withdrawById n id ss =
-  let (n', s') = getStock id ss |> withdraw n
-  in (n', setStock id s' ss)
-
-withdraw : Amount -> Stock -> (Amount, Stock)
-withdraw dx s =
-  case s of
-    Mass x -> if x > dx then (dx, Mass (x - dx)) else (x, Mass 0)
-    Ground -> (dx, Ground)
-
-
-getStock : Id -> StockRepo -> Stock
-getStock id ss = D.get id ss |> M.withDefault Ground
-
-setStock : Id -> Stock -> StockRepo -> StockRepo
-setStock = D.insert
-
-
-valueById : Id -> StockRepo -> Maybe Amount
-valueById id ss = getStock id ss |> value
-
-value : Stock -> Maybe Amount
-value s =
-  case s of
-    Mass x -> Just x
-    Ground -> Nothing
-
-value2 : Stock -> Float
-value2 s =
-  case s of
-    Mass x -> x
-    Ground -> 0
+withdraw : Float -> Float -> (Float, Float)
+withdraw dx x =
+  if x > dx 
+  then (dx, x - dx)
+  else (x, 0)

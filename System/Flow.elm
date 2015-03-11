@@ -17,13 +17,6 @@ flowsInfo = D.values >> L.map print
 print : Flow -> (Id, Id)
 print flow = ("","")
 
-getRate : Maybe Float -> Maybe Float -> Flow -> Float
-getRate i o flow =
-  case flow of
-    Growth _ r -> r
-    Decay _ r _ -> r
-    Constant _ r -> r
-
 setRate : Float -> Flow -> Flow
 setRate r flow =
   case flow of
