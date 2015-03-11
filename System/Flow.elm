@@ -10,6 +10,7 @@ import Maybe as M
 type Flow = Deprecate { source:Id, sink:Id, rate:Rate, stateId:Id, states:D.Dict Id State }
   | Growth Id Float
   | Decay Id Float Float
+  | Constant Id Float
 type alias State = { flux : Maybe Amount -> Maybe Amount -> Rate , rules : List Rule }
 type alias Rule = { trigger: Maybe Amount -> Maybe Amount -> Bool, newStateId: Id }
 type alias Amount = Float
@@ -29,6 +30,7 @@ getRate i o flow =
     Deprecate f -> f.rate
     Growth _ r -> r
     Decay _ r _ -> r
+    Constant _ r -> r
 
 setRate : Float -> Flow -> Flow
 setRate r flow =
@@ -36,6 +38,7 @@ setRate r flow =
     Deprecate f -> Deprecate { f | rate <- r }
     Growth a _ -> Growth a r
     Decay a _ b -> Decay a r b
+    Constant a _ -> Constant a r
 
 transitionState : Maybe Amount -> Maybe Amount -> Flow -> Flow
 transitionState i o flow =

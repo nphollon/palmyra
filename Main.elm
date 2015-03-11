@@ -8,13 +8,13 @@ import Maybe
 import Signal ((<~), (~), foldp)
 import Dict
 
-import Data.Thermostat (thermostat)
+import Data.Simple (smallSystems)
 
 port speed : Maybe Float
 timeDilation = Maybe.withDefault 1.0 speed
 plyPerSecond = 10
 
-startState = System.new thermostat
+startState = System.new smallSystems
 
 main = 
   let

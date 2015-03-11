@@ -81,3 +81,4 @@ sourceToSink flow ss =
       in case sourceValue of
         Just v -> SS.withdrawById (r * (v - v0)) id ss |> snd
         Nothing -> ss
+    SF.Constant id r -> SS.depositById r id ss
