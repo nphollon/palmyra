@@ -4,18 +4,12 @@ import Array as A
 import Dict as D
 import List as L
 import Maybe as M
-import String as S
+import Signal as S
+import String as Str
 
 type alias Id = String
 
 type System = Systemic {
-    ply : Int,
-    stocks : D.Dict Id Float,
-    flows : D.Dict Id Flow,
-    rules : D.Dict Id Rule
-  }
-
-type alias SystemParams = { 
     stocks : D.Dict Id Float,
     flows : D.Dict Id Flow,
     rules : D.Dict Id Rule
@@ -28,16 +22,8 @@ type alias Rule = {
 
 type Flow = Growth Id Float | Decay Id Float Float | Constant Id Float
 
-new : SystemParams -> System
-new params = Systemic { params | ply = 0 }
-
 getInfo : System -> (List (Id, String), List (Id, Id))
 getInfo (Systemic sys) = (stocksInfo sys.stocks, flowsInfo sys.flows)
-
-update : Int -> System -> System
-update plyLimit (Systemic sys) =
-  if | sys.ply < plyLimit -> evolve (Systemic { sys | ply <- sys.ply + 1 })
-     | otherwise -> (Systemic sys)
 
 evolve : System -> System
 evolve (Systemic sys) =
@@ -87,7 +73,7 @@ format x =
   let
     totalCents = round (x * 100)
     dollars = totalCents // 100 |> toString
-    cents = totalCents `rem` 100 |> abs |> toString |> S.pad 2 '0'
+    cents = totalCents `rem` 100 |> abs |> toString |> Str.pad 2 '0'
   in dollars ++ "." ++ cents
 
 deposit : Float -> Float -> Float

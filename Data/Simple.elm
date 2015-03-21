@@ -1,12 +1,15 @@
 module Data.Simple (smallSystems) where
 
-import System (SystemParams, Flow(..), transform2)
+import System (..)
 import Dict
 
-smallSystems : SystemParams
-smallSystems = {
-    stocks = Dict.fromList [ ("Room", 285), ("Account", 100) ],
-    flows = Dict.fromList [ ("Heating", Constant "Room" 0), ("Cooling", Decay "Room" 0.001 265), ("Interest", Growth "Account" 0.0003) ],
+smallSystems = Systemic {
+    stocks = Dict.fromList [ ("Room", 285), ("Account", 100), ("Time", 0) ],
+    flows = Dict.fromList [ 
+      ("Heating", Constant "Room" 0),
+      ("Cooling", Decay "Room" 0.001 265),
+      ("Interest", Growth "Account" 0.001),
+      ("Counting", Constant "Time" 1) ],
     rules = Dict.fromList [ ("Thermostat", heatTrigger) ]
   }
 
