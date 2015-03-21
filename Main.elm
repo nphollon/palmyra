@@ -12,7 +12,7 @@ import Data.Simple (smallSystems)
 
 port speed : Maybe Float
 timeDilation = Maybe.withDefault 1.0 speed
-plyPerSecond = 10
+plyPerSecond = 3
 
 startState = System.new smallSystems
 

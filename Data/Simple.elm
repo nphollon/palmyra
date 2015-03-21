@@ -1,7 +1,6 @@
 module Data.Simple (smallSystems) where
 
-import System (SystemParams)
-import System.Flow (Flow(..))
+import System (SystemParams, Flow(..), transform2)
 import Dict
 
 smallSystems : SystemParams
@@ -13,9 +12,10 @@ smallSystems = {
 
 heatTrigger = {
   target = "Heating",
-  dependsOn = "Room",
-  rule t =
-    if | t < 287 -> Just 0.1
-       | t > 290 -> Just 0
-       | otherwise -> Nothing
+  rule = transform2 "Room" "Heating" heatRule
   }
+
+heatRule t h =
+  if | t < 287 -> 0.1
+     | t > 290 -> 0
+     | otherwise -> h
