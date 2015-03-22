@@ -20,7 +20,11 @@ type alias Rule = {
     rule : System -> Maybe Float
   }
 
-type Flow = Growth Id Float | Decay Id Float Float | Constant Id Float
+type Flow = 
+  Growth Id Float |
+  Decay Id Float Float |
+  Constant Id Float |
+  Transfer Id Id Float
 
 getInfo : System -> (List (Id, String), List (Id, Id))
 getInfo (Systemic sys) = (stocksInfo sys.stocks, flowsInfo sys.flows)
@@ -61,7 +65,7 @@ sourceToSink flow =
     Growth id r -> update id <| \v -> deposit (r*v) v
     Decay id r v0 -> update id <| \v -> deposit (r * (v0 - v)) v
     Constant id r -> update id <| deposit r
-
+    Transfer i j r -> transfer i j r
 
 
 
@@ -79,13 +83,13 @@ format x =
 deposit : Float -> Float -> Float
 deposit dx x = max 0 (dx + x)
 
-withdrawById : Float -> Id -> D.Dict Id Float -> (Float, D.Dict Id Float)
-withdrawById dx id ss =
-  case (D.get id ss) of
-    Nothing -> (0, ss)
+transfer : Id -> Id -> Float -> D.Dict Id Float -> D.Dict Id Float
+transfer i j dx ss =
+  case (D.get i ss) of
+    Nothing -> ss
     Just x ->
       let (dx', x') = withdraw dx x
-      in (dx', D.insert id x' ss)
+      in D.insert i x' ss |> D.update j (M.map <| deposit dx')
 
 withdraw : Float -> Float -> (Float, Float)
 withdraw dx x =
@@ -106,6 +110,7 @@ setRate r flow =
     Growth a _ -> Growth a r
     Decay a _ b -> Decay a r b
     Constant a _ -> Constant a r
+    Transfer a b _ -> Transfer a b r
 
 getRate : Flow -> Float
 getRate flow =
@@ -113,8 +118,12 @@ getRate flow =
     Growth _ r -> r
     Decay _ r _ -> r
     Constant _ r -> r
+    Transfer _ _ r -> r
 
 
+transform1 : Id -> (Float -> Float) -> System -> Maybe Float
+transform1 i f sys = 
+  M.map f (view i sys)
 
 transform2 : Id -> Id -> (Float -> Float -> Float) -> System -> Maybe Float
 transform2 i j f sys =

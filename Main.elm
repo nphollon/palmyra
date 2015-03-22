@@ -11,12 +11,13 @@ import Mouse
 import Interface
 
 import System
-import Data.Simple (smallSystems)
+import Data.Agricola as Agri
 
 port speed : Maybe Float
 
-timeDilation = Maybe.withDefault 1.0 speed
-plyPerSecond = 10
+timeDilation = (Maybe.withDefault 1.0 speed) / Agri.turnDuration
+plyPerTurn = Agri.plyPerTurn
+startState = Agri.start
 
 main = 
   let
@@ -25,15 +26,13 @@ main =
   in display <~ update ~ time
 
 ply : Signal Int
-ply = dropRepeats <| floor << (*) plyPerSecond <~ time
+ply = dropRepeats <| floor << (*) plyPerTurn <~ time
 
 time : Signal Float
-time = foldp (tick timeDilation) 0 (AnimationFrame.frameWhen pause)
+time = Time.inSeconds <~ foldp tick 0 (AnimationFrame.frameWhen pause)
 
 pause : Signal Bool
 pause = foldp (always not) True Mouse.clicks
 
-tick : Float -> Time.Time -> Float -> Float
-tick dilation dt t = Time.inSeconds dt * dilation + t
-
-startState = smallSystems
+tick : Time.Time -> Time.Time -> Time.Time
+tick dt t = t + dt * timeDilation
