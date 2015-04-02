@@ -16,6 +16,11 @@ type System = Sys {
     rules : D.Dict Id (System -> Float)
   }
 
+new : { stocks : List (String, Float), rates : List (String, Float, System -> Float), flows : List Flow } -> System
+new { stocks, rates, flows } = 
+  let (rates', rules') = L.map (\(a,b,c) -> ((a,b),(a,c))) rates |> L.unzip
+  in Sys { stocks = D.fromList stocks, flows = flows, rates = D.fromList rates', rules = D.fromList rules' }
+
 getInfo (Sys s) = (s.stocks, s.rates)
 
 evolve : Int -> System -> System

@@ -12,12 +12,20 @@ labor = 0.5
 hunger = 30
 day = 1.0/30
 
-start = Sys {
-  stocks = Dict.fromList [
+start = {
+  stocks = [
     ("Population", 100),
     ("Crops", 0),
     ("Stockpile", 500),
     ("Time", 0) ],
+  rates = [
+    ("Day", day, always day),
+    ("Growth", 0, transform1 "Time" seasonal),
+    ("Death Rate", deathRate, transform2 "Population" "Stockpile" starving),
+    ("Birth Rate", birthRate, always birthRate),
+    ("Eating", -3, transform1 "Population" eating),
+    ("Labor", 0.5, transform1 "Population" laborious)
+  ],
   flows = [
     Flux add "Day" "Time",
     Flux add "Growth" "Crops",
@@ -25,24 +33,9 @@ start = Sys {
     Flux grow "Birth Rate" "Population",
     Flux add "Eating" "Stockpile",
     Flux add "Starving" "Population",
-    Transfer transfer "Labor" "Crops" "Stockpile" ],
-  rates = Dict.fromList [
-    ("Day", day),
-    ("Growth", 0),
-    ("Death Rate", deathRate),
-    ("Birth Rate", birthRate),
-    ("Eating", -3),
-    ("Labor", 0.5)
-  ], rules = Dict.fromList [
-    ("Day", always day),
-    ("Growth", transform1 "Time" seasonal),
-    ("Death Rate", transform2 "Population" "Stockpile" starving),
-    ("Birth Rate", always birthRate),
-    ("Eating", transform1 "Population" eating),
-    ("Labor", transform1 "Population" laborious)
-  ]}
+    Transfer transfer "Labor" "Crops" "Stockpile" ]
+  }
 
--- floor should be property of the stock, so that all flows affect it the same way
 add dx x = max 0 (x + dx)
 
 decay r p = p * (1 - r)

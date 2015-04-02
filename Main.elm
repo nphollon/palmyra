@@ -17,7 +17,7 @@ port speed : Maybe Float
 
 timeDilation = (Maybe.withDefault 1.0 speed) / Agri.turnDuration
 plyPerTurn = Agri.plyPerTurn
-startState = Agri.start
+startState = System.new Agri.start
 
 main = 
   let
