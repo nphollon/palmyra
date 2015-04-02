@@ -6,26 +6,53 @@ import Dict
 turnDuration = 24
 plyPerTurn = 360
 
-start = Systemic {
+deathRate = 4.186E-4
+birthRate = 6E-4
+labor = 0.5
+hunger = 30
+day = 1.0/30
+
+start = Sys {
   stocks = Dict.fromList [
     ("Population", 100),
     ("Crops", 0),
     ("Stockpile", 500),
     ("Time", 0) ],
-  flows = Dict.fromList [
-    ("Counting", Constant "Time" (1.0/30)),
-    ("Growing", Constant "Crops" 0),
-    ("Harvesting", Transfer "Crops" "Stockpile" 0.5),
-    ("Dying", Decay "Population" 4.186E-4 0),
-    ("Birthing", Growth "Population" 6E-4),
-    ("Eating", Constant "Stockpile" -100),
-    ("Starving", Constant "Population" 0) ],
-  rules = Dict.fromList [
-    ("Seasons Rule", { target = "Growing", rule = (transform1 "Time" seasonal) } ),
-    ("Labor Rule", { target = "Harvesting", rule = (transform1 "Population" laborious) } ),
-    ("Eating Rule", { target = "Eating", rule = (transform1 "Population" eating) } ),
-    ("Starving Rule", { target = "Dying", rule = (transform2 "Population" "Stockpile" starving) } ) ]
-  }
+  flows = [
+    Flux add "Day" "Time",
+    Flux add "Growth" "Crops",
+    Flux decay "Death Rate" "Population",
+    Flux grow "Birth Rate" "Population",
+    Flux add "Eating" "Stockpile",
+    Flux add "Starving" "Population",
+    Transfer transfer "Labor" "Crops" "Stockpile" ],
+  rates = Dict.fromList [
+    ("Day", day),
+    ("Growth", 0),
+    ("Death Rate", deathRate),
+    ("Birth Rate", birthRate),
+    ("Eating", -3),
+    ("Labor", 0.5)
+  ], rules = Dict.fromList [
+    ("Day", always day),
+    ("Growth", transform1 "Time" seasonal),
+    ("Death Rate", transform2 "Population" "Stockpile" starving),
+    ("Birth Rate", always birthRate),
+    ("Eating", transform1 "Population" eating),
+    ("Labor", transform1 "Population" laborious)
+  ]}
+
+-- floor should be property of the stock, so that all flows affect it the same way
+add dx x = max 0 (x + dx)
+
+decay r p = p * (1 - r)
+
+grow r p = p * (1 + r)
+
+transfer r i o =
+  if | i < r        -> (0, o + i)
+     | o < negate r -> (i + o, 0)
+     | otherwise    -> (i - r, o + r)
 
 seasonal t =
   let r = floor t % 12
@@ -33,10 +60,8 @@ seasonal t =
         | r >= 6 -> 6
         | otherwise -> -500
 
-laborious p = p
+laborious p = labor * p
 
-eating p = negate (p / 30)
+eating p = negate (p / hunger)
 
-starving p s =
-  let deathRate = 4.186E-4
-  in if s * 30 < p then 5 * deathRate else deathRate
+starving p s = if s * 30 < p then 20 * deathRate else deathRate

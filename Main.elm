@@ -22,7 +22,7 @@ startState = Agri.start
 main = 
   let
     display = Interface.display << System.getInfo
-    update = foldp (always System.evolve) startState ply
+    update = foldp System.evolve startState ply
   in display <~ update ~ time
 
 ply : Signal Int

@@ -1,132 +1,77 @@
 module System where
 
-import Array as A
-import Dict as D
 import List as L
+import Dict as D
 import Maybe as M
-import Signal as S
-import String as Str
 
 type alias Id = String
 
-type System = Systemic {
+type Flow = Flux (Float -> Float -> Float) Id Id
+          | Transfer (Float -> Float -> Float -> (Float,Float)) Id Id Id
+
+type System = Sys {
     stocks : D.Dict Id Float,
-    flows : D.Dict Id Flow,
-    rules : D.Dict Id Rule
+    flows : List Flow,
+    rates : D.Dict Id Float,
+    rules : D.Dict Id (System -> Float)
   }
 
-type alias Rule = {
-    target : Id,
-    rule : System -> Maybe Float
-  }
+getInfo (Sys s) = (s.stocks, s.rates)
 
-type Flow = 
-  Growth Id Float |
-  Decay Id Float Float |
-  Constant Id Float |
-  Transfer Id Id Float
+evolve : Int -> System -> System
+evolve _ = transportMass >> updateRates
 
-getInfo : System -> (List (Id, String), List (Id, Id))
-getInfo (Systemic sys) = (stocksInfo sys.stocks, flowsInfo sys.flows)
-
-evolve : System -> System
-evolve (Systemic sys) =
-  let newFlowSys = L.foldl applyRule (Systemic sys) (D.values sys.rules)
-  in L.foldl applyFlow newFlowSys (D.values sys.flows)
-
-applyRule : Rule -> System -> System
-applyRule r (Systemic sys) =
-  let
-    k = r.target
-    v = r.rule (Systemic sys)
-    newFlows = D.update k (updateRate v) sys.flows
-  in (Systemic { sys | flows <- newFlows })
-
-updateRate : Maybe Float -> Maybe Flow -> Maybe Flow
-updateRate mv mf = case (mv, mf) of
-  (Just v, Just f) -> Just (setRate v f)
-  otherwise -> mf
+transportMass : System -> System
+transportMass sys = flows sys |> L.foldl applyFlow sys
 
 applyFlow : Flow -> System -> System
-applyFlow f (Systemic sys) = Systemic { sys | stocks <- sourceToSink f sys.stocks }
+applyFlow flow sys = case flow of
+  Flux f r si -> applyFlux f r si sys
+  Transfer f r si sj -> applyTransfer f r si sj sys
 
+applyFlux : (Float -> Float -> Float) -> Id -> Id -> System -> System
+applyFlux f v i sys =
+  case (getRate v sys, getStock i sys) of
+    (Just r, Just x) -> setStock i (f r x) sys
+    otherwise -> sys
+
+applyTransfer : (Float -> Float -> Float -> (Float, Float)) -> Id -> Id -> Id -> System -> System
+applyTransfer f v i j sys =
+  let setStocks (a,b) = setStock i a >> setStock j b
+  in case (getRate v sys, getStock i sys, getStock j sys) of
+    (Just r, Just x, Just y) -> setStocks (f r x y) sys
+    otherwise -> sys
+
+updateRates : System -> System
+updateRates sys = setRates (D.map (\_ f -> f sys) (rules sys)) sys
+
+flows : System -> List Flow
+flows (Sys s) = s.flows
+
+rules : System -> D.Dict Id (System -> Float)
+rules (Sys s) = s.rules
+
+getStock : Id -> System -> Maybe Float
+getStock i (Sys s) = D.get i s.stocks
+
+setStock : Id -> Float -> System -> System
+setStock i x (Sys s) = Sys { s | stocks <- D.insert i x s.stocks }
+
+getRate : Id -> System -> Maybe Float
+getRate i (Sys s) = D.get i s.rates
+
+setRates : D.Dict Id Float -> System -> System
+setRates rs (Sys s) = Sys { s | rates <- rs }
+
+transform1 : Id -> (Float -> Float) -> System -> Float
+transform1 i f sys = case (view i sys) of
+  Just x -> f x
+  Nothing -> 0
+
+transform2 : Id -> Id -> (Float -> Float -> Float) -> System -> Float
+transform2 i j f sys = case (view i sys, view j sys) of
+  (Just x, Just y) -> f x y
+  otherwise -> 0
 
 view : Id -> System -> Maybe Float
-view i (Systemic sys) =
-  let
-    stockView = D.get i sys.stocks
-    flowView = D.get i sys.flows |> M.map getRate
-  in M.oneOf [ stockView, flowView ]
-
-sourceToSink : Flow -> D.Dict Id Float -> D.Dict Id Float
-sourceToSink flow =
-  let update id = D.update id << M.map
-  in case flow of
-    Growth id r -> update id <| \v -> deposit (r*v) v
-    Decay id r v0 -> update id <| \v -> deposit (r * (v0 - v)) v
-    Constant id r -> update id <| deposit r
-    Transfer i j r -> transfer i j r
-
-
-
-stocksInfo : D.Dict Id Float -> List (Id, String)
-stocksInfo = D.map (\k v -> k ++ " : " ++ format v) >> D.toList
-
-format : Float -> String
-format x =
-  let
-    totalCents = round (x * 100)
-    dollars = totalCents // 100 |> toString
-    cents = totalCents `rem` 100 |> abs |> toString |> Str.pad 2 '0'
-  in dollars ++ "." ++ cents
-
-deposit : Float -> Float -> Float
-deposit dx x = max 0 (dx + x)
-
-transfer : Id -> Id -> Float -> D.Dict Id Float -> D.Dict Id Float
-transfer i j dx ss =
-  case (D.get i ss) of
-    Nothing -> ss
-    Just x ->
-      let (dx', x') = withdraw dx x
-      in D.insert i x' ss |> D.update j (M.map <| deposit dx')
-
-withdraw : Float -> Float -> (Float, Float)
-withdraw dx x =
-  if x > dx 
-  then (dx, x - dx)
-  else (x, 0)
-
-
-flowsInfo : D.Dict Id Flow -> List (Id, Id)
-flowsInfo = D.values >> L.map print
-
-print : Flow -> (Id, Id)
-print flow = ("","")
-
-setRate : Float -> Flow -> Flow
-setRate r flow =
-  case flow of
-    Growth a _ -> Growth a r
-    Decay a _ b -> Decay a r b
-    Constant a _ -> Constant a r
-    Transfer a b _ -> Transfer a b r
-
-getRate : Flow -> Float
-getRate flow =
-  case flow of
-    Growth _ r -> r
-    Decay _ r _ -> r
-    Constant _ r -> r
-    Transfer _ _ r -> r
-
-
-transform1 : Id -> (Float -> Float) -> System -> Maybe Float
-transform1 i f sys = 
-  M.map f (view i sys)
-
-transform2 : Id -> Id -> (Float -> Float -> Float) -> System -> Maybe Float
-transform2 i j f sys =
-  case (view i sys, view j sys) of
-    (Just x, Just y) -> Just (f x y)
-    otherwise -> Nothing
+view i sys = M.oneOf [ getStock i sys, getRate i sys ]

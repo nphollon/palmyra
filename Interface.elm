@@ -1,14 +1,5 @@
 module Interface where
 
-import Interface.System as System
-import Interface.Clock as Clock
+import Text
 
-import Graphics.Collage as GC
-import Graphics.Element as GE
-
-display : (List (comparable, String), List (comparable, comparable)) -> Float -> GE.Element
-display (stocks, flows) time =
-  let
-    clock = Clock.pendulum time
-    systemDrawing = System.draw stocks flows
-  in GE.flow GE.right [ systemDrawing, clock ]
+display x _ = toString x |> Text.plainText
