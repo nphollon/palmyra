@@ -19,9 +19,9 @@ timeDilation = (Maybe.withDefault 1.0 speed) / Agri.turnDuration
 plyPerTurn = Agri.plyPerTurn
 startState = System.new Agri.start
 
-main = 
+main =
   let
-    display = Interface.display << System.getInfo
+    display = Interface.draw Agri.display
     update = foldp System.evolve startState ply
   in display <~ update ~ time
 
