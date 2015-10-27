@@ -3,43 +3,43 @@ module Data.Agricola (start, display, turnDuration, plyPerTurn) where
 import System (..)
 import Array
 import Maybe
+import String
 
 turnDuration = 24
 plyPerTurn = 360
 
 deathRate = 4.186E-4
 birthRate = 6E-4
-labor = 0.5
-hunger = 30
 day = 1.0/30
+hunger = day
+labor = 0.067
+arableLand = labor * 500
 
 start = {
   stocks = [
     ("Population", 100),
-    ("Crops", 0),
     ("Stockpile", 500),
     ("Date", 0) ],
   rates = [
     ("Day", day, always day),
-    ("Growth", 0, transform1 "Date" seasonalGrowth),
+    ("Harvest", 0, transform2 "Population" "Date" seasonalGrowth),
     ("Death Rate", deathRate, transform2 "Population" "Stockpile" starving),
     ("Birth Rate", birthRate, always birthRate),
-    ("Eating", -3, transform1 "Population" eating),
-    ("Labor", 0.5, transform1 "Population" laborious) ],
+    ("Eating", -3, transform1 "Population" eating) ],
   flows = [
     Flux add "Day" "Date",
-    Flux add "Growth" "Crops",
+    Flux add "Harvest" "Stockpile",
     Flux decay "Death Rate" "Population",
     Flux grow "Birth Rate" "Population",
     Flux add "Eating" "Stockpile",
-    Flux add "Starving" "Population",
-    Transfer transfer "Labor" "Crops" "Stockpile" ]
+    Flux add "Starving" "Population" ]
   }
 
 display = [
   ("Population", int),
   ("Date", date),
-  ("Stockpile", int)
+  ("Stockpile", int),
+  ("Harvest", decimal)
   ]
 
 add dx x = max 0 (x + dx)
@@ -53,19 +53,25 @@ transfer r i o =
      | o < negate r -> (i + o, 0)
      | otherwise    -> (i - r, o + r)
 
-seasonalGrowth t =
+seasonalGrowth p t =
   let r = floor t % 12
-  in if | r <= 2 -> 0
-        | r >= 6 -> 6
-        | otherwise -> -500
+  in if | r >= 6 -> min arableLand (labor * p)
+        | otherwise -> 0
 
-laborious p = labor * p
+eating p = negate (p * hunger)
 
-eating p = negate (p / hunger)
-
-starving p s = if s * 30 < p then 20 * deathRate else deathRate
+starving p s =
+  let a = if s < p * hunger then 20 else 1
+  in a * deathRate
 
 int = floor >> toString
+
+decimal x =
+  let
+    totalCents = round (x * 100)
+    dollars = totalCents // 100 |> toString
+    cents = totalCents `rem` 100 |> abs |> toString |> String.pad 2 '0'
+  in dollars ++ "." ++ cents
 
 months = Array.fromList [ "September", "October", "November", "December", "January", "February", "March", "April", "May", "June", "July", "August" ]
 month t =
